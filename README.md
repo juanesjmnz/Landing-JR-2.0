@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -48,3 +49,7 @@ export default tseslint.config({
   },
 })
 ```
+=======
+# Landing-JR-2.0
+Professional VSL landing page for B2B Coach Consultant in LATAM with 30+ years of experience. Features Calendly integration, social proof, testimonials, and pricing tiers.
+>>>>>>> 1be5c2ab5f8c3d366efccb9eaf470f33a6cd0ca8
