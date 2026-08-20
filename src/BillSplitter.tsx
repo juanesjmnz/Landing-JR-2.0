@@ -4,6 +4,7 @@ import {
   Check,
   Copy,
   ImageUp,
+  Images,
   Plus,
   Receipt,
   RotateCcw,
@@ -59,7 +60,8 @@ export default function BillSplitter() {
   const [extraCharge, setExtraCharge] = useState('')
   const [extraMode, setExtraMode] = useState<'proportional' | 'equal'>('proportional')
   const [copied, setCopied] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const libraryInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,7 +169,8 @@ export default function BillSplitter() {
     setItems([])
     setPendingMark(null)
     setExtraCharge('')
-    if (fileInputRef.current) fileInputRef.current.value = ''
+    if (cameraInputRef.current) cameraInputRef.current.value = ''
+    if (libraryInputRef.current) libraryInputRef.current.value = ''
   }
 
   const copySummary = () => {
@@ -210,18 +213,34 @@ export default function BillSplitter() {
               <p className="text-gray-400 mb-6 max-w-md mx-auto">
                 Toma una foto o sube una imagen del recibo para empezar a marcar los platos y dividir la cuenta entre tus amigos.
               </p>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold py-3 px-6 rounded-lg transition-colors"
-              >
-                <Camera className="h-5 w-5" />
-                Subir o tomar foto
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                  <Camera className="h-5 w-5" />
+                  Tomar foto
+                </button>
+                <button
+                  onClick={() => libraryInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                  <Images className="h-5 w-5" />
+                  Elegir de galería
+                </button>
+              </div>
               <input
-                ref={fileInputRef}
+                ref={cameraInputRef}
                 type="file"
                 accept="image/*"
                 capture="environment"
+                className="hidden"
+                onChange={handlePhotoChange}
+              />
+              <input
+                ref={libraryInputRef}
+                type="file"
+                accept="image/*"
                 className="hidden"
                 onChange={handlePhotoChange}
               />
