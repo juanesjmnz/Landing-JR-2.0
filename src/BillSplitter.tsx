@@ -1,10 +1,13 @@
+import { createWorker } from 'tesseract.js'
 import { useMemo, useRef, useState } from 'react'
 import {
+  AlertTriangle,
   Camera,
   Check,
   Copy,
   ImageUp,
   Images,
+  Loader2,
   Plus,
   Receipt,
   RotateCcw,
@@ -13,6 +16,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
+import { parseReceiptText } from './receiptParser'
 
 interface Person {
   id: string
@@ -27,7 +31,11 @@ interface Item {
   personIds: string[]
   x: number
   y: number
+  detected: boolean
 }
+
+const TESSERACT_VERSION = '7.0.0'
+const TESSERACT_CORE_VERSION = '7.0.0'
 
 const PERSON_COLORS = [
   '#f59e0b',
@@ -48,27 +56,101 @@ function uid() {
   return Math.random().toString(36).slice(2, 10)
 }
 
+function loadImageSize(dataUrl: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
+    img.onerror = reject
+    img.src = dataUrl
+  })
+}
+
 export default function BillSplitter() {
   const [photo, setPhoto] = useState<string | null>(null)
   const [people, setPeople] = useState<Person[]>([])
   const [items, setItems] = useState<Item[]>([])
   const [newPersonName, setNewPersonName] = useState('')
-  const [pendingMark, setPendingMark] = useState<{ x: number; y: number } | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [draftPosition, setDraftPosition] = useState<{ x: number; y: number } | null>(null)
   const [formDish, setFormDish] = useState('')
   const [formAmount, setFormAmount] = useState('')
   const [formPeople, setFormPeople] = useState<string[]>([])
   const [extraCharge, setExtraCharge] = useState('')
   const [extraMode, setExtraMode] = useState<'proportional' | 'equal'>('proportional')
   const [copied, setCopied] = useState(false)
+  const [detecting, setDetecting] = useState(false)
+  const [detectProgress, setDetectProgress] = useState(0)
+  const [detectError, setDetectError] = useState<string | null>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const libraryInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
+
+  const runAutoDetect = async (dataUrl: string) => {
+    setDetecting(true)
+    setDetectError(null)
+    setDetectProgress(0)
+    try {
+      const [{ width, height }, worker] = await Promise.all([
+        loadImageSize(dataUrl),
+        createWorker('spa', 1, {
+          // tesseract.js@7 builds its default CDN URLs with a stray "v" prefix
+          // (e.g. tesseract.js@v7.0.0), which 404s on jsdelivr — pin the
+          // correct URLs explicitly instead of relying on the built-in default.
+          workerPath: `https://cdn.jsdelivr.net/npm/tesseract.js@${TESSERACT_VERSION}/dist/worker.min.js`,
+          corePath: `https://cdn.jsdelivr.net/npm/tesseract.js-core@${TESSERACT_CORE_VERSION}`,
+          logger: (m) => {
+            if (m.status === 'recognizing text' && typeof m.progress === 'number') {
+              setDetectProgress(m.progress)
+            }
+          },
+        }),
+      ])
+
+      const { data } = await worker.recognize(dataUrl, {}, { blocks: true })
+      await worker.terminate()
+
+      const lines = (data.blocks ?? []).flatMap((block) =>
+        block.paragraphs.flatMap((paragraph) => paragraph.lines),
+      )
+
+      const detected: Item[] = []
+      for (const line of lines) {
+        const [parsed] = parseReceiptText(line.text)
+        if (!parsed) continue
+        detected.push({
+          id: uid(),
+          dish: parsed.dish,
+          amount: parsed.amount,
+          personIds: [],
+          x: width > 0 ? ((line.bbox.x0 + line.bbox.x1) / 2 / width) * 100 : -1,
+          y: height > 0 ? ((line.bbox.y0 + line.bbox.y1) / 2 / height) * 100 : -1,
+          detected: true,
+        })
+        if (detected.length >= 30) break
+      }
+
+      if (detected.length === 0) {
+        setDetectError('No se detectaron platos automáticamente. Márcalos tocando la foto.')
+      } else {
+        setItems((prev) => [...prev, ...detected])
+      }
+    } catch {
+      setDetectError('No se pudo analizar la foto automáticamente. Puedes marcar los platos tocando la foto.')
+    } finally {
+      setDetecting(false)
+    }
+  }
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = () => setPhoto(reader.result as string)
+    reader.onload = () => {
+      const dataUrl = reader.result as string
+      setPhoto(dataUrl)
+      runAutoDetect(dataUrl)
+    }
     reader.readAsDataURL(file)
   }
 
@@ -90,41 +172,61 @@ export default function BillSplitter() {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
-    setPendingMark({ x, y })
+    setEditingItemId(null)
+    setDraftPosition({ x, y })
     setFormDish('')
     setFormAmount('')
     setFormPeople([])
+    setSheetOpen(true)
+  }
+
+  const addItemManually = () => {
+    if (people.length === 0) return
+    setEditingItemId(null)
+    setDraftPosition({ x: 50, y: 50 })
+    setFormDish('')
+    setFormAmount('')
+    setFormPeople([])
+    setSheetOpen(true)
+  }
+
+  const openEditItem = (item: Item) => {
+    setEditingItemId(item.id)
+    setDraftPosition(null)
+    setFormDish(item.dish)
+    setFormAmount(String(item.amount))
+    setFormPeople(item.personIds)
+    setSheetOpen(true)
+  }
+
+  const closeSheet = () => {
+    setSheetOpen(false)
+    setEditingItemId(null)
+    setDraftPosition(null)
   }
 
   const togglePersonForItem = (id: string) => {
     setFormPeople((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]))
   }
 
-  const confirmMark = () => {
+  const confirmSheet = () => {
     const amount = Number.parseFloat(formAmount)
-    if (!formDish.trim() || !Number.isFinite(amount) || amount <= 0 || formPeople.length === 0 || !pendingMark) return
-    setItems([
-      ...items,
-      {
-        id: uid(),
-        dish: formDish.trim(),
-        amount,
-        personIds: formPeople,
-        x: pendingMark.x,
-        y: pendingMark.y,
-      },
-    ])
-    setPendingMark(null)
-    setFormDish('')
-    setFormAmount('')
-    setFormPeople([])
-  }
+    if (!formDish.trim() || !Number.isFinite(amount) || amount <= 0 || formPeople.length === 0) return
 
-  const addItemManually = () => {
-    setPendingMark({ x: 50, y: 50 })
-    setFormDish('')
-    setFormAmount('')
-    setFormPeople([])
+    if (editingItemId) {
+      setItems(
+        items.map((it) =>
+          it.id === editingItemId ? { ...it, dish: formDish.trim(), amount, personIds: formPeople } : it,
+        ),
+      )
+    } else {
+      const pos = draftPosition ?? { x: 50, y: 50 }
+      setItems([
+        ...items,
+        { id: uid(), dish: formDish.trim(), amount, personIds: formPeople, x: pos.x, y: pos.y, detected: false },
+      ])
+    }
+    closeSheet()
   }
 
   const removeItem = (id: string) => setItems(items.filter((it) => it.id !== id))
@@ -133,7 +235,12 @@ export default function BillSplitter() {
     const byPerson: Record<string, number> = {}
     for (const p of people) byPerson[p.id] = 0
 
+    let unassigned = 0
     for (const item of items) {
+      if (item.personIds.length === 0) {
+        unassigned += item.amount
+        continue
+      }
       const share = item.amount / item.personIds.length
       for (const pid of item.personIds) {
         if (byPerson[pid] === undefined) continue
@@ -160,15 +267,17 @@ export default function BillSplitter() {
     }
 
     const grandTotal = Object.values(finalTotals).reduce((a, b) => a + b, 0)
-    return { byPerson: finalTotals, subtotal, grandTotal, extra }
+    return { byPerson: finalTotals, subtotal, grandTotal, extra, unassigned }
   }, [people, items, extraCharge, extraMode])
 
   const reset = () => {
     setPhoto(null)
     setPeople([])
     setItems([])
-    setPendingMark(null)
+    closeSheet()
     setExtraCharge('')
+    setDetecting(false)
+    setDetectError(null)
     if (cameraInputRef.current) cameraInputRef.current.value = ''
     if (libraryInputRef.current) libraryInputRef.current.value = ''
   }
@@ -211,7 +320,8 @@ export default function BillSplitter() {
               <ImageUp className="h-12 w-12 text-gray-500 mx-auto mb-4" />
               <h2 className="text-xl font-semibold mb-2">Sube la foto de la factura</h2>
               <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                Toma una foto o sube una imagen del recibo para empezar a marcar los platos y dividir la cuenta entre tus amigos.
+                Toma una foto o sube una imagen del recibo. Intentaremos detectar los platos y sus montos
+                automáticamente; solo tendrás que decir quién pidió cada uno.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
@@ -255,34 +365,58 @@ export default function BillSplitter() {
                 }`}
               >
                 <img src={photo} alt="Factura" className="w-full h-auto block" draggable={false} />
-                {items.map((item, idx) => (
-                  <div
-                    key={item.id}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-gray-900 shadow-lg ring-2 ring-white/80"
-                    style={{
-                      left: `${item.x}%`,
-                      top: `${item.y}%`,
-                      backgroundColor: item.personIds.length === 1
-                        ? people.find((p) => p.id === item.personIds[0])?.color || '#f59e0b'
-                        : '#f59e0b',
-                    }}
-                    title={item.dish}
-                  >
-                    {idx + 1}
-                  </div>
-                ))}
-                {pendingMark && (
+                {items.map((item, idx) =>
+                  item.x >= 0 && item.y >= 0 ? (
+                    <div
+                      key={item.id}
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-gray-900 shadow-lg ${
+                        item.personIds.length === 0 ? 'ring-2 ring-dashed ring-amber-300' : 'ring-2 ring-white/80'
+                      }`}
+                      style={{
+                        left: `${item.x}%`,
+                        top: `${item.y}%`,
+                        backgroundColor:
+                          item.personIds.length === 1
+                            ? people.find((p) => p.id === item.personIds[0])?.color || '#f59e0b'
+                            : '#f59e0b',
+                      }}
+                      title={item.dish}
+                    >
+                      {idx + 1}
+                    </div>
+                  ) : null,
+                )}
+                {draftPosition && (
                   <div
                     className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full border-2 border-dashed border-amber-400 animate-pulse"
-                    style={{ left: `${pendingMark.x}%`, top: `${pendingMark.y}%` }}
+                    style={{ left: `${draftPosition.x}%`, top: `${draftPosition.y}%` }}
                   />
                 )}
+                {detecting && (
+                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-3 text-center px-6">
+                    <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
+                    <p className="font-semibold">Detectando platos…</p>
+                    <div className="w-48 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-amber-400 transition-all"
+                        style={{ width: `${Math.round(detectProgress * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
+              {detectError && (
+                <div className="flex items-start gap-2 text-sm text-amber-300 bg-amber-400/10 border border-amber-400/30 rounded-lg px-3 py-2">
+                  <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <span>{detectError}</span>
+                </div>
+              )}
               {people.length === 0 ? (
-                <p className="text-sm text-amber-400">Agrega al menos una persona antes de marcar los platos.</p>
+                <p className="text-sm text-amber-400">Agrega al menos una persona para poder asignar los platos.</p>
               ) : (
                 <p className="text-sm text-gray-400">
-                  Toca sobre el plato en la foto para marcarlo, o usa "Agregar plato" para hacerlo manualmente.
+                  Toca sobre un plato en la foto para marcarlo a mano, o toca un plato detectado en la lista para
+                  asignarlo o corregirlo.
                 </p>
               )}
               <button
@@ -301,33 +435,39 @@ export default function BillSplitter() {
               <h3 className="font-semibold mb-4">Platos marcados</h3>
               <ul className="space-y-2">
                 {items.map((item, idx) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center justify-between gap-3 bg-gray-800/60 rounded-lg px-3 py-2"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-400 text-gray-900 text-xs font-bold flex items-center justify-center">
-                        {idx + 1}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="font-medium truncate">{item.dish}</div>
-                        <div className="text-xs text-gray-400 truncate">
-                          {item.personIds
-                            .map((pid) => people.find((p) => p.id === pid)?.name)
-                            .filter(Boolean)
-                            .join(', ')}
+                  <li key={item.id} className="flex items-center gap-2">
+                    <button
+                      onClick={() => openEditItem(item)}
+                      className="flex-1 min-w-0 flex items-center justify-between gap-3 bg-gray-800/60 hover:bg-gray-800 rounded-lg px-3 py-2 text-left transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-400 text-gray-900 text-xs font-bold flex items-center justify-center">
+                          {idx + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">{item.dish}</div>
+                          {item.personIds.length > 0 ? (
+                            <div className="text-xs text-gray-400 truncate">
+                              {item.personIds
+                                .map((pid) => people.find((p) => p.id === pid)?.name)
+                                .filter(Boolean)
+                                .join(', ')}
+                            </div>
+                          ) : (
+                            <div className="text-xs text-amber-400 truncate">
+                              {item.detected ? 'Detectado · toca para asignar' : 'Sin asignar · toca para asignar'}
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="font-semibold text-amber-400">{formatMoney(item.amount)}</span>
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-gray-500 hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                      <span className="font-semibold text-amber-400 flex-shrink-0">{formatMoney(item.amount)}</span>
+                    </button>
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="flex-shrink-0 text-gray-500 hover:text-red-400 transition-colors p-1"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -414,6 +554,11 @@ export default function BillSplitter() {
           {people.length > 0 && items.length > 0 && (
             <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
               <h3 className="font-semibold mb-4">Total por persona</h3>
+              {totals.unassigned > 0 && (
+                <p className="text-xs text-amber-400 mb-3">
+                  {formatMoney(totals.unassigned)} en platos sin asignar todavía — no se incluyen en el total.
+                </p>
+              )}
               <ul className="space-y-3 mb-4">
                 {people.map((p) => (
                   <li key={p.id} className="flex items-center justify-between">
@@ -441,12 +586,12 @@ export default function BillSplitter() {
         </aside>
       </main>
 
-      {pendingMark && (
+      {sheetOpen && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-gray-900 border border-gray-800 rounded-xl max-w-sm w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Marcar plato</h3>
-              <button onClick={() => setPendingMark(null)} className="text-gray-500 hover:text-white">
+              <h3 className="font-semibold">{editingItemId ? 'Editar plato' : 'Marcar plato'}</h3>
+              <button onClick={closeSheet} className="text-gray-500 hover:text-white">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -486,11 +631,11 @@ export default function BillSplitter() {
               ))}
             </div>
             <button
-              onClick={confirmMark}
+              onClick={confirmSheet}
               disabled={!formDish.trim() || !formAmount || formPeople.length === 0}
               className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed text-gray-900 font-bold py-2.5 rounded-lg transition-colors"
             >
-              Agregar plato
+              {editingItemId ? 'Guardar cambios' : 'Agregar plato'}
             </button>
           </div>
         </div>
