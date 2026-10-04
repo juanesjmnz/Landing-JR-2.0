@@ -1,9 +1,11 @@
 import React from "react";
-import { interpolate } from "remotion";
+import { interpolate, useCurrentFrame } from "remotion";
 import {
   BigNumber,
   Card,
   CheckRow,
+  CountUp,
+  FloatingSticker,
   INK,
   Pill,
   StatBox,
@@ -45,23 +47,41 @@ export const StatFunny: React.FC<{ progress: number }> = () => (
   </Card>
 );
 
-export const StatEducational: React.FC<{ progress: number }> = () => (
-  <Card style={{ width: 460 }}>
-    <Pill bg="#AEE7F4" color={INK}>
-      Anuncios educativos
-    </Pill>
-    <div style={{ marginTop: 16 }}>
-      <StatBox label="GUARDADOS" value="200x" />
-      <StatBox label="AGENDAS" value="0" />
-    </div>
-    <BigNumber value={0} sub="Agendas desde estos anuncios" />
-    <div style={{ textAlign: "center", marginTop: 10 }}>
-      <Pill bg="#F5C242" color={INK}>
-        Nadie agendó
+export const StatEducational: React.FC<{ progress: number }> = () => {
+  const frame = useCurrentFrame();
+  return (
+    <Card style={{ width: 460 }}>
+      <Pill bg="#AEE7F4" color={INK}>
+        Anuncios educativos
       </Pill>
-    </div>
-  </Card>
-);
+      <div style={{ marginTop: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: `2px solid ${INK}`,
+            padding: "10px 0",
+          }}
+        >
+          <span style={{ fontFamily: "Inter", fontWeight: 800, fontSize: 22, color: "#555" }}>
+            GUARDADOS
+          </span>
+          <span style={{ fontSize: 30 }}>
+            <CountUp to={200} localFrame={frame} suffix="x" />
+          </span>
+        </div>
+        <StatBox label="AGENDAS" value="0" />
+      </div>
+      <BigNumber value={0} sub="Agendas desde estos anuncios" />
+      <div style={{ textAlign: "center", marginTop: 10 }}>
+        <Pill bg="#F5C242" color={INK}>
+          Nadie agendó
+        </Pill>
+      </div>
+    </Card>
+  );
+};
 
 const triple = (statusLabel: (i: number) => string, statusBg: string) => (
   <div style={{ display: "flex", gap: 12 }}>
@@ -260,32 +280,30 @@ export const WhichAd: React.FC<{ progress: number }> = ({ progress }) => {
   );
 };
 
-export const SwarmTitle: React.FC<{ progress: number }> = () => (
-  <div style={{ textAlign: "center", position: "relative" }}>
-    {["ATENCIÓN", "ENSEÑANZA", "CIERRE"].map((l, i) => (
+export const SwarmTitle: React.FC<{ progress: number }> = () => {
+  const frame = useCurrentFrame();
+  const bounce = Math.sin(frame / 10) * 2;
+  return (
+    <div style={{ textAlign: "center", position: "relative" }}>
+      <FloatingSticker text="ATENCIÓN 🔥" bg="#FF4FA3" top={-150} left={-200} rotate={-8} delay={0} />
+      <FloatingSticker text="ENSEÑANZA 🧠" bg="#AEE7F4" top={-105} left={70} rotate={6} delay={5} />
+      <FloatingSticker text="CIERRE 💰" bg="#A9E8A0" top={-60} left={-220} rotate={-5} delay={10} />
       <div
-        key={l}
         style={{
-          position: "absolute",
-          top: -140 + i * 40,
-          left: -160 + i * 160,
-          background: ["#FF4FA3", "#AEE7F4", "#A9E8A0"][i],
-          border: `2px solid ${INK}`,
-          borderRadius: 8,
-          padding: "8px 14px",
           fontFamily: "Archivo Black",
-          fontSize: 16,
-          transform: `rotate(${(i - 1) * 8}deg)`,
+          fontSize: 54,
+          lineHeight: 1.05,
+          maxWidth: 640,
+          transform: `rotate(${bounce}deg)`,
         }}
       >
-        {l}
+        LA ESTRATEGIA
+        <br />
+        DEL ENJAMBRE.
       </div>
-    ))}
-    <div style={{ fontFamily: "Archivo Black", fontSize: 54, lineHeight: 1.05, maxWidth: 640 }}>
-      LA ESTRATEGIA DEL ENJAMBRE.
     </div>
-  </div>
-);
+  );
+};
 
 const AdTypeHeader: React.FC<{
   moment: string;
@@ -731,7 +749,10 @@ export const Headcount: React.FC<{ progress: number }> = ({ progress }) => (
 );
 
 export const CTA: React.FC<{ progress: number }> = () => (
-  <div style={{ textAlign: "center" }}>
+  <div style={{ textAlign: "center", position: "relative" }}>
+    <FloatingSticker text="👇 👇 👇" bg="#F5C242" top={-120} left={-40} rotate={-4} delay={2} />
+    <FloatingSticker text="100% GRATIS" bg="#FF4FA3" top={-70} left={160} rotate={7} delay={8} />
+    <FloatingSticker text="SOP ✅" bg="#A9E8A0" top={175} left={230} rotate={-6} delay={14} />
     <Pill bg="#F5C242" color={INK} style={{ marginBottom: 16 }}>
       Conoce el playbook
     </Pill>
