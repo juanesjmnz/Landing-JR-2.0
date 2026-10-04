@@ -11,11 +11,11 @@ export interface CaptionLine {
 }
 
 export const SCENE_DURATIONS = {
-  counter: 310, // 0.00 - 10.33s
-  underFive: 361, // 10.33 - 22.37s (nominal; overlaps TRANSITION_FRAMES with neighbors)
-  overBudget: 202,
-  numberLine: 322,
-  countdown: 307,
+  counter: 307, // 0.00 - 10.23s
+  underFive: 363, // overlaps TRANSITION_FRAMES with neighbors (nominal, not final on-screen time)
+  overBudget: 181, // the voiceover runs straight into scene 4 with ~no gap
+  numberLine: 337,
+  countdown: 314,
   statement: 173,
 } as const;
 
@@ -26,33 +26,33 @@ export const counterLines: CaptionLine[] = [
 ];
 
 export const underFiveLines: CaptionLine[] = [
-  { text: "Con menos de 5 no hay señal de aprendizaje ni variedad suficiente,", startFrame: 0, durationInFrames: 107 },
-  { text: "Meta no puede hacer pruebas entre los anuncios", startFrame: 130, durationInFrames: 56 },
-  { text: "y al tener poca variación, un solo anuncio puede llevar mucha inversión y generar sesgo.", startFrame: 186, durationInFrames: 136 },
+  { text: "Con menos de 5 no hay señal de aprendizaje ni variedad suficiente,", startFrame: 0, durationInFrames: 110 },
+  { text: "Meta no puede hacer pruebas entre los anuncios", startFrame: 130, durationInFrames: 59 },
+  { text: "y al tener poca variación, un solo anuncio puede llevar mucha inversión y generar sesgo.", startFrame: 189, durationInFrames: 136 },
 ];
 
 export const overBudgetLines: CaptionLine[] = [
   { text: "Con más de 25 el presupuesto se diluye,", startFrame: 0, durationInFrames: 65 },
-  { text: "puede que un muy buen anuncio esté escondido porque nunca obtuvo gasto.", startFrame: 74, durationInFrames: 94 },
+  { text: "puede que un muy buen anuncio esté escondido porque nunca obtuvo gasto.", startFrame: 74, durationInFrames: 93 },
 ];
 
 export const overBudgetHeadline = "Un solo flujo delgado de presupuesto, todos pasan hambre";
 
 export const numberLineLines: CaptionLine[] = [
-  { text: "El número exacto dentro del rango depende de tu presupuesto", startFrame: 0, durationInFrames: 84 },
-  { text: "y de tu velocidad de producción creativa.", startFrame: 84, durationInFrames: 57 },
-  { text: "Más gasto y más conceptos, necesitas subir más tu cantidad.", startFrame: 153, durationInFrames: 107 },
+  { text: "El número exacto dentro del rango depende de tu presupuesto", startFrame: 0, durationInFrames: 106 },
+  { text: "y de tu velocidad de producción creativa.", startFrame: 106, durationInFrames: 57 },
+  { text: "Más gasto y más conceptos, necesitas subir más tu cantidad.", startFrame: 178, durationInFrames: 104 },
 ];
 
 export const countdownLines: CaptionLine[] = [
-  { text: "La prueba de oro es: ¿puedes identificar tus anuncios ganadores en tan solo 10 días?", startFrame: 0, durationInFrames: 148 },
-  { text: "Si no puedes hacerlo, tienes demasiados anuncios para el presupuesto que tienes.", startFrame: 168, durationInFrames: 100 },
+  { text: "La prueba de oro es: ¿puedes identificar tus anuncios ganadores en tan solo 10 días?", startFrame: 0, durationInFrames: 155 },
+  { text: "Si no puedes hacerlo, tienes demasiados anuncios para el presupuesto que tienes.", startFrame: 175, durationInFrames: 100 },
 ];
 
 export const statementLines = {
   first: "UN CONJUNTO DE ANUNCIOS\nES UNA PRUEBA CONTROLADA",
   second: "NO UN LUGAR PARA SOLTAR\nCIENTOS DE ANUNCIOS Y NO REVISARLO",
-  firstDuration: 81,
+  firstDuration: 80,
 };
 
 // Full narration script, in order — matches public/voiceover-es.mp3 exactly.

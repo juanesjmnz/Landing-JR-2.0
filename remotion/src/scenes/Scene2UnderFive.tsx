@@ -9,7 +9,7 @@ import { bounceIn, wiggle } from "../utils/anim";
 
 const ICONS_TRIGGER = 90;
 // Lines up with the voiceover reaching "mucha inversión ... y generar sesgo."
-const BIAS_TRIGGER = 258;
+const BIAS_TRIGGER = 266;
 // One ad hogging the budget: heights are deliberately lopsided.
 const BIAS_BAR_HEIGHTS = [14, 20, 78, 16];
 
