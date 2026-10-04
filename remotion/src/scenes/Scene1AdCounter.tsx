@@ -1,17 +1,25 @@
 import React from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors } from "../theme";
+import { fontHeavy } from "../fonts";
 import { AnimatedBackground } from "../components/AnimatedBackground";
 import { FloatingParticles } from "../components/FloatingParticles";
 import { IconChip } from "../components/IconChip";
 import { RollingNumber } from "../components/RollingNumber";
+import { BounceWord } from "../components/BounceWord";
 import { bounceIn, breathe, punch } from "../utils/anim";
 
-// Beat frames line up with the voiceover actually saying "50" and "5 a 25".
+// The opening question ("¿Cuántos anuncios necesitas...?") gets its own
+// animated hook title instead of a number — the actual count only appears
+// once the voiceover starts answering ("Ni 1, ni 50...").
+const HOOK_END = 94;
+const HOOK_TITLE = ["¿CUÁNTOS", "ANUNCIOS?"];
+
+// Beat frames line up with the voiceover actually saying "1", "50" and "5 a 25".
 const BEATS = [
-  { at: 0, value: "1", color: colors.blue, cards: "single" as const, stamp: null as "x" | "check" | null },
-  { at: 121, value: "50", color: colors.blue, cards: "chaos" as const, stamp: "x" as const },
-  { at: 170, value: "5-25", color: colors.green, cards: "row" as const, stamp: "check" as const },
+  { at: 96, value: "1", color: colors.blue, cards: "single" as const, stamp: "x" as const },
+  { at: 117, value: "50", color: colors.blue, cards: "chaos" as const, stamp: "x" as const },
+  { at: 142, value: "5-25", color: colors.green, cards: "row" as const, stamp: "check" as const },
 ];
 
 const CARD_COUNT = 26;
@@ -44,13 +52,19 @@ export const Scene1AdCounter: React.FC = () => {
 
   const stampProgress = Math.max(0, Math.min(1, punch(sinceBeat, fps, 5)));
 
-  // The "1" sits on screen alone for ~4s while the opening question is being
-  // asked — give it a continuous idle pulse + waiting ring so it reads as
-  // "thinking about the answer" instead of a frozen frame.
-  const isWaiting = beat.cards === "single";
-  const idlePulse = isWaiting ? 1 + breathe(frame, 36, 0.06) : 1;
-  const waitRingScale = isWaiting ? 1 + breathe(frame, 36, 0.1) : 1;
-  const waitRingOpacity = isWaiting ? 0.25 + breathe(frame, 36, 0.15) : 0;
+  // Hook title entrance/exit — swaps out for the number sequence right as
+  // the voiceover starts answering its own question.
+  const hookEntrance = Math.max(0, Math.min(1, bounceIn(frame, fps, 4)));
+  const hookQMarkPulse = 1 + breathe(frame, 40, 0.07);
+  const hookQMarkWiggle = Math.sin(frame / 14) * 4;
+  const hookExit = interpolate(frame, [HOOK_END - 10, HOOK_END], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const hookExitScale = interpolate(frame, [HOOK_END - 10, HOOK_END], [1, 1.12], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   return (
     <AbsoluteFill
@@ -68,7 +82,96 @@ export const Scene1AdCounter: React.FC = () => {
         <IconChip icon="megaphone" label="POR CONJUNTO DE ANUNCIOS" color={colors.white} background="#1A1A1A" delay={0} fontSize={18} />
       </div>
 
+      {/* Opening hook: a pulsing "?" with orbiting ghost ad-cards, standing in
+          for the question being asked before any number is revealed. */}
+      {frame < HOOK_END && (
+        <div
+          style={{
+            position: "relative",
+            width: 500,
+            height: 420,
+            marginTop: 10,
+            opacity: hookExit,
+            transform: `scale(${hookExitScale})`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {Array.from({ length: 4 }).map((_, i) => {
+            const angle = frame / 55 + (i * Math.PI) / 2;
+            const r = 150;
+            const ox = Math.cos(angle) * r;
+            const oy = Math.sin(angle) * r * 0.55;
+            return (
+              <div
+                key={i}
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "44%",
+                  width: CARD_W,
+                  height: CARD_H,
+                  marginLeft: -CARD_W / 2,
+                  marginTop: -CARD_H / 2,
+                  borderRadius: 5,
+                  border: `3px solid ${colors.blue}`,
+                  backgroundColor: "rgba(255,255,255,0.6)",
+                  opacity: Math.min(1, hookEntrance) * 0.5,
+                  transform: `translate(${ox}px, ${oy}px) rotate(${(angle * 180) / Math.PI}deg)`,
+                }}
+              />
+            );
+          })}
+
+          <div
+            style={{
+              position: "absolute",
+              width: 220,
+              height: 220,
+              borderRadius: "50%",
+              border: `4px solid ${colors.blue}`,
+              opacity: 0.18 + breathe(frame, 40, 0.12),
+              transform: `scale(${hookQMarkPulse})`,
+            }}
+          />
+
+          <div
+            style={{
+              position: "relative",
+              fontFamily: fontHeavy,
+              fontWeight: 800,
+              fontSize: 170,
+              lineHeight: 1,
+              color: colors.blue,
+              opacity: Math.min(1, hookEntrance),
+              transform: `scale(${Math.max(0, hookEntrance) * hookQMarkPulse}) rotate(${hookQMarkWiggle}deg)`,
+            }}
+          >
+            ?
+          </div>
+
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "0 14px",
+              marginTop: 8,
+              textAlign: "center",
+            }}
+          >
+            {HOOK_TITLE.map((w, i) => (
+              <BounceWord key={w} text={w} color="#1A1A1A" delay={10 + i * 6} fontSize={46} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Ad-card cloud: visually dramatizes "too few" -> "too many" -> "just right" */}
+      {frame >= HOOK_END && (
       <div style={{ position: "relative", width: 780, height: 240, marginTop: 36 }}>
         {Array.from({ length: CARD_COUNT }).map((_, i) => {
           const angle = seeded(i * 3.1) * Math.PI * 2;
@@ -104,7 +207,6 @@ export const Scene1AdCounter: React.FC = () => {
           const y = targetY * stagger;
           const rot = targetRot * stagger;
           const opacity = targetOpacity * (beat.cards === "single" && i === 0 ? 1 : stagger);
-          const cardScale = beat.cards === "single" && i === 0 ? idlePulse : 1;
 
           return (
             <div
@@ -121,32 +223,17 @@ export const Scene1AdCounter: React.FC = () => {
                 backgroundColor: colors.white,
                 border: `3px solid ${beat.color}`,
                 opacity,
-                transform: `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${cardScale})`,
+                transform: `translate(${x}px, ${y}px) rotate(${rot}deg)`,
               }}
             />
           );
         })}
       </div>
+      )}
 
       {/* Big rolling value, stamped with X (too many) or check (just right) */}
-      <div style={{ position: "relative", marginTop: 24, transform: `scale(${idlePulse})` }}>
-        {isWaiting && (
-          <div
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              width: 230,
-              height: 230,
-              marginLeft: -115,
-              marginTop: -115,
-              borderRadius: "50%",
-              border: `3px solid ${beat.color}`,
-              opacity: waitRingOpacity,
-              transform: `scale(${waitRingScale})`,
-            }}
-          />
-        )}
+      {frame >= HOOK_END && (
+      <div style={{ position: "relative", marginTop: 24 }}>
         <RollingNumber value={beat.value} color={beat.color} fontSize={150} changedAtFrame={beat.at} />
         {beat.stamp && (
           <svg
@@ -181,6 +268,7 @@ export const Scene1AdCounter: React.FC = () => {
           </svg>
         )}
       </div>
+      )}
     </AbsoluteFill>
   );
 };
