@@ -4,12 +4,12 @@ Réplica en Remotion del Reel de Instagram (`instagram.com/reel/DdwmZBqtSje`), c
 
 ## Audio / voces
 
-`public/narracion.mp3` es la narración final (172.1s), generada con el conector de ElevenLabs:
+`public/narracion.mp3` es la narración final (180.9s), generada con el conector de ElevenLabs:
 
-- **Peter** (fundador): voz "Enzo - Viral Videos, Reels and Shorts" (`4L2A19qwD3pMcNlt484F`) — joven, enérgica, pensada para contenido viral/Reels/TikTok.
-- **Coach**: voz "Manu Arias - Español Viral" (`cfU714yVeokYQrpdyev5`) — joven, neutra ("Neutral Professional Spanish"), segura, también orientada a contenido viral.
+- **Peter** (fundador): voz "Juan - Friendly & Effortless" (`VvYiNBPylZtUh8Bf6u8l`) — joven, acento latinoamericano genérico (no de un país puntual), cercana y natural.
+- **Coach**: voz "Luján" (`GcbypXUfJn5DbptRc2U7`) — descrita explícitamente como "acento neutro latino", cálida, segura, tono medio-grave.
 - Modelo: `eleven_multilingual_v2`.
-- (Primera iteración probada: "carlos" + "OscarLopez - Fresh Paisa" — se cambiaron por pedido del usuario a voces más jóvenes y de acento más neutro.)
+- Iteraciones previas descartadas por pedido del usuario: "carlos" + "OscarLopez - Fresh Paisa" (muy regionales) y "Enzo" + "Manu Arias" (acento de España, no latino).
 
 Se generó en 14 "turnos" (parlamentos continuos de un mismo personaje, no línea por línea) para que la prosodia sonara natural, con 0.3s de silencio entre turnos. `src/data/script.ts` ya tiene los tiempos (`start`/`end`) resincronizados a la duración real de cada clip — ver `remotion/src/data/script.ts`'s encabezado y el script de resync usado (`resync.py`, en el scratchpad de la sesión que lo generó) si necesitas regenerar la narración.
 
