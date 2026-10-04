@@ -57,6 +57,7 @@ export const AdSetReel: React.FC = () => {
       <CaptionLayer />
       <TimelineBar />
       <Audio src={staticFile("voiceover-es.mp3")} />
+      <Audio src={staticFile("music-bg.mp3")} />
     </AbsoluteFill>
   );
 };
