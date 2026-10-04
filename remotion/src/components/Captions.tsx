@@ -1,17 +1,7 @@
 import React from "react";
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { CaptionLine } from "../data/script";
-import { ACCENTS, usePop, wordProgress } from "./Primitives";
-
-// Spring puntual para el "pop" de la palabra activa (0 -> overshoot -> 1).
-// `spring()` es una función pura de Remotion, no un hook de React, así que
-// es seguro llamarla condicionalmente por palabra.
-const wordPop = (localFrame: number, fps: number) =>
-  spring({
-    frame: Math.max(0, localFrame),
-    fps,
-    config: { damping: 9, stiffness: 300, mass: 0.4 },
-  });
+import { SPEAKER_STYLE, usePop, wordProgress } from "./Primitives";
 
 export const Captions: React.FC<{
   lines: CaptionLine[];
@@ -25,79 +15,81 @@ export const Captions: React.FC<{
     [...lines].reverse().find((l) => tAbs >= l.start) ?? lines[0];
   const words = active.text.split(" ");
   const revealed = wordProgress(tAbs, active.start, active.end, words.length);
+  const style = SPEAKER_STYLE[active.speaker];
 
-  // Frames desde que ESTA línea se volvió activa (para el "punch" al cambiar de línea).
+  // Frames desde que ESTA línea se volvió activa: una entrada simple y
+  // breve (sin rotación ni rebote exagerado) para que se note el cambio
+  // de línea sin distraer de la lectura.
   const lineLocalFrame = Math.max(
     0,
     frame - Math.round((active.start - shotStart) * fps)
   );
-  const punch = usePop(lineLocalFrame, { stiffness: 260, damping: 13, mass: 0.5 });
-  const chipScale = interpolate(punch, [0, 1], [0.82, 1]);
-  const shake = Math.sin(lineLocalFrame / 2) * Math.max(0, 4 - lineLocalFrame);
+  const pop = usePop(lineLocalFrame, { stiffness: 240, damping: 20, mass: 0.6 });
+  const chipScale = interpolate(pop, [0, 1], [0.96, 1]);
+  const chipOpacity = interpolate(pop, [0, 1], [0, 1]);
 
   return (
     <div
       style={{
         position: "absolute",
-        bottom: 300,
+        bottom: 290,
         left: 90,
         right: 90,
         display: "flex",
-        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
       }}
     >
       <div
         style={{
+          background: style.accent,
+          color: "#fff",
+          fontFamily: "Archivo Black",
+          fontSize: 15,
+          letterSpacing: 1,
+          padding: "5px 16px",
+          borderRadius: 999,
+          marginBottom: 8,
+          transform: `scale(${chipScale})`,
+          opacity: chipOpacity,
+        }}
+      >
+        {style.label}
+      </div>
+      <div
+        style={{
           background: "#fff",
-          border: "3px solid #111",
+          border: `3px solid ${style.accent}`,
           borderRadius: 16,
-          padding: "14px 22px",
+          padding: "14px 24px",
           maxWidth: 860,
           textAlign: "center",
-          boxShadow: "6px 6px 0px 0px rgba(17,17,17,1)",
-          transform: `scale(${chipScale}) translateX(${shake}px)`,
+          boxShadow: `5px 5px 0px 0px ${style.accent}`,
+          transform: `scale(${chipScale})`,
         }}
       >
         <span
           style={{
             fontFamily: "Archivo Black",
             fontSize: 30,
-            lineHeight: 1.22,
+            lineHeight: 1.25,
             color: "#111",
           }}
         >
           {words.map((w, i) => {
             if (i >= revealed) return null;
             const isCurrent = i === revealed - 1;
-            // frame local al momento en que ESTA palabra se reveló
-            const wordRevealT = interpolate(
-              i + 1,
-              [0, words.length],
-              [active.start, active.end]
-            );
-            const wordLocalFrame = Math.round(
-              (tAbs - wordRevealT) * fps + (fps * 0.001)
-            );
-            const pop = isCurrent ? wordPop(wordLocalFrame, fps) : 1;
-            const scale = interpolate(pop, [0, 1], [1.5, 1], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            });
-            const rot = isCurrent ? (i % 2 === 0 ? -3 : 3) : 0;
-            const color = ACCENTS[i % ACCENTS.length];
             return (
               <span key={i}>
                 <span
                   style={{
-                    display: "inline-block",
-                    background: isCurrent ? color : "transparent",
+                    background: isCurrent ? style.tint : "transparent",
+                    borderBottom: isCurrent
+                      ? `4px solid ${style.accent}`
+                      : "4px solid transparent",
                     boxDecorationBreak: "clone",
                     WebkitBoxDecorationBreak: "clone",
-                    padding: isCurrent ? "2px 6px" : undefined,
-                    borderRadius: 4,
-                    transform: isCurrent
-                      ? `scale(${scale}) rotate(${rot}deg)`
-                      : undefined,
+                    padding: "1px 3px",
                   }}
                 >
                   {w}

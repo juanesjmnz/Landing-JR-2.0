@@ -5,6 +5,13 @@ export const INK = "#111111";
 
 export const ACCENTS = ["#F5C242", "#FF4FA3", "#A9E8A0", "#AEE7F4", "#F5A623"];
 
+// Identidad visual por personaje, reutilizada en subtítulos y avatares,
+// para que se puedan diferenciar de un vistazo quién habla.
+export const SPEAKER_STYLE = {
+  peter: { label: "PETER", accent: "#2E4374", tint: "#E3E9F5" },
+  coach: { label: "COACH", accent: "#B4631A", tint: "#F8E7D6" },
+} as const;
+
 // Resorte "pop" reutilizable: 0 -> overshoot -> 1 en pocos frames.
 export const usePop = (
   localFrame: number,
@@ -314,8 +321,10 @@ export const Avatar: React.FC<{
   const dir = side === "left" ? 1 : -1;
 
   const skin = "#E8B48C";
+  // Mismos colores que la etiqueta de personaje en los subtítulos
+  // (SPEAKER_STYLE), para que se identifiquen de un vistazo.
   const shirt = kind === "buyer" ? "#2E4374" : "#F4F4F4";
-  const pants = kind === "buyer" ? "#22314F" : "#4E7A3B";
+  const pants = kind === "buyer" ? "#22314F" : "#B4631A";
   const hair = kind === "buyer" ? "#3A2A20" : "#B8862F";
 
   return (
