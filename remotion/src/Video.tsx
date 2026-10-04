@@ -1,11 +1,11 @@
 import React from "react";
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, Audio, staticFile } from "remotion";
 import { TransitionSeries, springTiming } from "@remotion/transitions";
 import { slide } from "@remotion/transitions/slide";
 import { SCENE_DURATIONS, TRANSITION_FRAMES } from "./script";
 import { Scene1AdCounter } from "./scenes/Scene1AdCounter";
 import { Scene2UnderFive } from "./scenes/Scene2UnderFive";
-import { Scene3OverForty } from "./scenes/Scene3OverForty";
+import { Scene3OverBudget } from "./scenes/Scene3OverBudget";
 import { Scene4NumberLine } from "./scenes/Scene4NumberLine";
 import { Scene5Countdown } from "./scenes/Scene5Countdown";
 import { Scene6Statement } from "./scenes/Scene6Statement";
@@ -30,8 +30,8 @@ export const AdSetReel: React.FC = () => {
 
         <TransitionSeries.Transition presentation={slide({ direction: "from-left" })} timing={timing()} />
 
-        <TransitionSeries.Sequence durationInFrames={SCENE_DURATIONS.overForty}>
-          <Scene3OverForty />
+        <TransitionSeries.Sequence durationInFrames={SCENE_DURATIONS.overBudget}>
+          <Scene3OverBudget />
         </TransitionSeries.Sequence>
 
         <TransitionSeries.Transition presentation={slide({ direction: "from-bottom" })} timing={timing()} />
@@ -56,6 +56,7 @@ export const AdSetReel: React.FC = () => {
       {/* Global overlays — consistent across every scene cut */}
       <CaptionLayer />
       <TimelineBar />
+      <Audio src={staticFile("voiceover-es.mp3")} />
     </AbsoluteFill>
   );
 };

@@ -11,7 +11,8 @@ import { SCENE_DURATIONS } from "../script";
 
 const LINE_WIDTH = 620;
 const MARKER_MIN = 5;
-const MARKER_MAX = 40;
+const MARKER_MAX = 25;
+const AXIS_MAX = 30; // scale upper bound — keeps the 5-25 range visually spread out
 
 export const Scene4NumberLine: React.FC = () => {
   const frame = useCurrentFrame();
@@ -25,9 +26,9 @@ export const Scene4NumberLine: React.FC = () => {
   const valueChangeFrame = ((markerValue - MARKER_MIN) / (MARKER_MAX - MARKER_MIN)) * SCENE_DURATIONS.numberLine;
   const tickScale = 1 + Math.max(0, 1 - Math.min(1, punch(frame - valueChangeFrame, fps))) * 0.35;
 
-  const markerX = interpolate(markerValue, [1, 100], [0, LINE_WIDTH]);
-  const rangeStart = interpolate(5, [1, 100], [0, LINE_WIDTH]);
-  const rangeEnd = interpolate(40, [1, 100], [0, LINE_WIDTH]);
+  const markerX = interpolate(markerValue, [1, AXIS_MAX], [0, LINE_WIDTH]);
+  const rangeStart = interpolate(MARKER_MIN, [1, AXIS_MAX], [0, LINE_WIDTH]);
+  const rangeEnd = interpolate(MARKER_MAX, [1, AXIS_MAX], [0, LINE_WIDTH]);
   const rangeGlow = 0.5 + breathe(frame, 50, 0.25);
 
   const lineEntrance = Math.max(0, Math.min(1, bounceIn(frame, fps)));
@@ -87,10 +88,10 @@ export const Scene4NumberLine: React.FC = () => {
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, color: colors.gray, fontFamily: fontHeavy, fontSize: 16 }}>
           <span>1</span>
-          <span>50</span>
-          <span>100+</span>
+          <span>15</span>
+          <span>30+</span>
         </div>
-        <div style={{ color: colors.green, fontFamily: fontHeavy, fontWeight: 700, fontSize: 18, marginTop: 4 }}>5 a 40</div>
+        <div style={{ color: colors.green, fontFamily: fontHeavy, fontWeight: 700, fontSize: 18, marginTop: 4 }}>5 a 25</div>
       </div>
 
       <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>

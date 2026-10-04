@@ -7,6 +7,12 @@ import { FloatingParticles } from "../components/FloatingParticles";
 import { IconChip } from "../components/IconChip";
 import { bounceIn, wiggle } from "../utils/anim";
 
+const ICONS_TRIGGER = 90;
+// Lines up with the voiceover reaching "mucha inversión ... y generar sesgo."
+const BIAS_TRIGGER = 258;
+// One ad hogging the budget: heights are deliberately lopsided.
+const BIAS_BAR_HEIGHTS = [14, 20, 78, 16];
+
 export const Scene2UnderFive: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -14,13 +20,17 @@ export const Scene2UnderFive: React.FC = () => {
   const barGrow = bounceIn(frame, fps);
   const barWidth = interpolate(barGrow, [0, 1], [0, 300], { extrapolateRight: "clamp" });
 
-  const iconsEntrance = bounceIn(frame, fps, 55);
+  const iconsEntrance = bounceIn(frame, fps, ICONS_TRIGGER);
   const iconsScale = Math.max(0, iconsEntrance);
-  const iconsOpacity = interpolate(frame, [52, 68], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const shake = frame >= 55 ? wiggle(frame, 14, 4) : 0;
+  const iconsOpacity = interpolate(frame, [ICONS_TRIGGER - 3, ICONS_TRIGGER + 13], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const shake = frame >= ICONS_TRIGGER ? wiggle(frame, 14, 4) : 0;
 
-  const ringPulse = frame >= 55 ? 1 + Math.abs(Math.sin((frame - 55) / 10)) * 0.25 : 1;
-  const ringOpacity = frame >= 55 ? interpolate(Math.sin((frame - 55) / 10), [-1, 1], [0.1, 0.4]) : 0;
+  const ringPulse = frame >= ICONS_TRIGGER ? 1 + Math.abs(Math.sin((frame - ICONS_TRIGGER) / 10)) * 0.25 : 1;
+  const ringOpacity =
+    frame >= ICONS_TRIGGER ? interpolate(Math.sin((frame - ICONS_TRIGGER) / 10), [-1, 1], [0.1, 0.4]) : 0;
 
   return (
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 230 }}>
@@ -43,7 +53,7 @@ export const Scene2UnderFive: React.FC = () => {
             }}
           />
         </div>
-        <div style={{ fontFamily: fontHand, fontSize: 48, color: "#1A1A1A", marginTop: 14 }}>5 a 40</div>
+        <div style={{ fontFamily: fontHand, fontSize: 48, color: "#1A1A1A", marginTop: 14 }}>5 a 25</div>
 
         <div style={{ position: "relative", marginTop: 56, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div
@@ -76,6 +86,27 @@ export const Scene2UnderFive: React.FC = () => {
               <path d="M0,16 Q18,0 37,16 T74,16 T111,16 T150,16" stroke={colors.red} strokeWidth={5} fill="none" strokeLinecap="round" />
             </svg>
           </div>
+        </div>
+
+        {/* One ad eating the whole budget: reinforces "un solo anuncio puede
+            llevar mucha inversión y generar sesgo" right as it's said. */}
+        <div style={{ position: "relative", display: "flex", alignItems: "flex-end", gap: 8, height: 90, marginTop: 34 }}>
+          {BIAS_BAR_HEIGHTS.map((h, i) => {
+            const isHog = i === 2;
+            const growth = Math.max(0, Math.min(1, bounceIn(frame, fps, BIAS_TRIGGER + i * 4)));
+            return (
+              <div
+                key={i}
+                style={{
+                  width: 20,
+                  height: h * growth,
+                  backgroundColor: isHog ? colors.red : colors.gray,
+                  borderRadius: 3,
+                  boxShadow: isHog ? `0 0 14px ${colors.red}99` : "none",
+                }}
+              />
+            );
+          })}
         </div>
       </div>
     </AbsoluteFill>

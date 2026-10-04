@@ -10,13 +10,16 @@ import { statementLines } from "../script";
 const FIRST_WORDS = ["UN", "CONJUNTO", "DE", "ANUNCIOS", "ES", "UNA", "PRUEBA", "CONTROLADA"];
 const SECOND_WORDS: Array<{ text: string; color: string }> = [
   { text: "NO", color: colors.maroon },
-  { text: "ES", color: "#1A1A1A" },
   { text: "UN", color: "#1A1A1A" },
   { text: "LUGAR", color: "#1A1A1A" },
   { text: "PARA", color: "#1A1A1A" },
   { text: "SOLTAR", color: "#1A1A1A" },
-  { text: "5.000", color: colors.green },
+  { text: "CIENTOS", color: colors.green },
+  { text: "DE", color: colors.green },
   { text: "ANUNCIOS", color: colors.green },
+  { text: "Y", color: "#1A1A1A" },
+  { text: "NO", color: "#1A1A1A" },
+  { text: "REVISARLO", color: "#1A1A1A" },
 ];
 
 export const Scene6Statement: React.FC = () => {
@@ -62,8 +65,8 @@ export const Scene6Statement: React.FC = () => {
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "center",
-            gap: "0 14px",
-            maxWidth: 760,
+            gap: "0 12px",
+            maxWidth: 820,
             textAlign: "center",
           }}
         >
@@ -71,7 +74,7 @@ export const Scene6Statement: React.FC = () => {
             const isEmphasis = w.color === colors.green;
             return (
               <span key={w.text + i} style={{ transform: isEmphasis ? `scale(${emphasisPulse})` : undefined, display: "inline-block" }}>
-                <BounceWord text={w.text} color={w.color} delay={cut + i * 3} fontSize={48} />
+                <BounceWord text={w.text} color={w.color} delay={cut + i * 3} fontSize={42} />
               </span>
             );
           })}

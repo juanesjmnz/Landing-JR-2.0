@@ -1,8 +1,8 @@
-// Spanish caption lines + frame timing, derived from the original reel's
-// narration timestamps (transcribed at 0.0–38.4s, 30fps project).
-// Re-time these once the real Spanish voiceover audio is available: adjust
-// each line's startFrame/durationInFrames (and SCENE_DURATIONS below) to
-// match the new audio's actual word timing.
+// Spanish caption lines + frame timing, derived word-for-word from the real
+// recorded voiceover (public/voiceover-es.mp3) via forced-alignment
+// transcription. Every startFrame/durationInFrames below is driven by that
+// recording's actual timestamps at 30fps — if the audio changes, re-run the
+// alignment and update this file to match.
 
 export interface CaptionLine {
   text: string;
@@ -11,59 +11,60 @@ export interface CaptionLine {
 }
 
 export const SCENE_DURATIONS = {
-  counter: 189, // 0.0 - 6.3s
-  underFive: 213, // 6.3 - 13.4s
-  overForty: 153, // 13.4 - 18.5s
-  numberLine: 261, // 18.5 - 27.2s
-  countdown: 186, // 27.2 - 33.4s
-  statement: 150, // 33.4 - 38.4s
+  counter: 310, // 0.00 - 10.33s
+  underFive: 361, // 10.33 - 22.37s (nominal; overlaps TRANSITION_FRAMES with neighbors)
+  overBudget: 202,
+  numberLine: 322,
+  countdown: 307,
+  statement: 173,
 } as const;
 
 export const counterLines: CaptionLine[] = [
-  { text: "¿Cuántos anuncios por conjunto de anuncios? Ni uno, ni 100 —", startFrame: 0, durationInFrames: 111 },
-  { text: "el rango de trabajo es de 5 a 40.", startFrame: 111, durationInFrames: 78 },
+  { text: "¿Cuántos anuncios necesitas por conjunto de anuncios?", startFrame: 9, durationInFrames: 86 },
+  { text: "Ni 1, ni 50,", startFrame: 100, durationInFrames: 31 },
+  { text: "el rango ideal es 5 a 25 aproximadamente, dependiendo de tu presupuesto.", startFrame: 142, durationInFrames: 132 },
 ];
 
 export const underFiveLines: CaptionLine[] = [
-  { text: "Con menos de 5, no hay señal de aprendizaje,", startFrame: 0, durationInFrames: 69 },
-  { text: "Meta no puede secuenciar entre los anuncios", startFrame: 69, durationInFrames: 63 },
-  { text: "y la variación temprana se confunde con la verdad.", startFrame: 132, durationInFrames: 81 },
+  { text: "Con menos de 5 no hay señal de aprendizaje ni variedad suficiente,", startFrame: 0, durationInFrames: 107 },
+  { text: "Meta no puede hacer pruebas entre los anuncios", startFrame: 130, durationInFrames: 56 },
+  { text: "y al tener poca variación, un solo anuncio puede llevar mucha inversión y generar sesgo.", startFrame: 186, durationInFrames: 136 },
 ];
 
-export const overFortyLines: CaptionLine[] = [
-  { text: "Con más de 40, el presupuesto se diluye.", startFrame: 0, durationInFrames: 72 },
-  { text: "Los ganadores nunca logran el gasto suficiente para demostrarlo.", startFrame: 72, durationInFrames: 81 },
+export const overBudgetLines: CaptionLine[] = [
+  { text: "Con más de 25 el presupuesto se diluye,", startFrame: 0, durationInFrames: 65 },
+  { text: "puede que un muy buen anuncio esté escondido porque nunca obtuvo gasto.", startFrame: 74, durationInFrames: 94 },
 ];
 
-export const overFortyHeadline = "Un solo flujo delgado de presupuesto, todos pasan hambre";
+export const overBudgetHeadline = "Un solo flujo delgado de presupuesto, todos pasan hambre";
 
 export const numberLineLines: CaptionLine[] = [
-  { text: "El número exacto dentro del rango depende de tu presupuesto", startFrame: 0, durationInFrames: 105 },
-  { text: "y tu velocidad creativa.", startFrame: 105, durationInFrames: 51 },
-  { text: "Más gasto y más conceptos — necesitas subir más alto.", startFrame: 156, durationInFrames: 105 },
+  { text: "El número exacto dentro del rango depende de tu presupuesto", startFrame: 0, durationInFrames: 84 },
+  { text: "y de tu velocidad de producción creativa.", startFrame: 84, durationInFrames: 57 },
+  { text: "Más gasto y más conceptos, necesitas subir más tu cantidad.", startFrame: 153, durationInFrames: 107 },
 ];
 
 export const countdownLines: CaptionLine[] = [
-  { text: "La prueba es: ¿puedes identificar a tus ganadores en 10 días?", startFrame: 0, durationInFrames: 120 },
-  { text: "Si no, tienes demasiados anuncios.", startFrame: 120, durationInFrames: 66 },
+  { text: "La prueba de oro es: ¿puedes identificar tus anuncios ganadores en tan solo 10 días?", startFrame: 0, durationInFrames: 148 },
+  { text: "Si no puedes hacerlo, tienes demasiados anuncios para el presupuesto que tienes.", startFrame: 168, durationInFrames: 100 },
 ];
 
 export const statementLines = {
   first: "UN CONJUNTO DE ANUNCIOS\nES UNA PRUEBA CONTROLADA",
-  second: "NO ES UN LUGAR PARA\nSOLTAR 5.000 ANUNCIOS",
-  firstDuration: 66,
+  second: "NO UN LUGAR PARA SOLTAR\nCIENTOS DE ANUNCIOS Y NO REVISARLO",
+  firstDuration: 81,
 };
 
-// Full narration script, in order — same text used for the ES voiceover deliverable.
+// Full narration script, in order — matches public/voiceover-es.mp3 exactly.
 export const FULL_SCRIPT_ES = [
   ...counterLines,
   ...underFiveLines,
-  ...overFortyLines,
+  ...overBudgetLines,
   ...numberLineLines,
   ...countdownLines,
 ]
   .map((l) => l.text)
-  .concat(["Un conjunto de anuncios es una prueba controlada,", "no un lugar para soltar 5.000 anuncios."]);
+  .concat(["Un conjunto de anuncios es una prueba controlada,", "no un lugar para soltar cientos de anuncios y no revisarlo."]);
 
 // --- Global centered caption track -----------------------------------------
 // The on-screen graphics differ per scene, but the spoken-word captions now
@@ -84,7 +85,7 @@ export interface AbsoluteCaption {
 const SCENE_ORDER: Array<{ key: keyof typeof SCENE_DURATIONS; lines: CaptionLine[]; theme: Theme }> = [
   { key: "counter", lines: counterLines, theme: "light" },
   { key: "underFive", lines: underFiveLines, theme: "light" },
-  { key: "overForty", lines: overFortyLines, theme: "light" },
+  { key: "overBudget", lines: overBudgetLines, theme: "light" },
   { key: "numberLine", lines: numberLineLines, theme: "light" },
   { key: "countdown", lines: countdownLines, theme: "dark" },
   // "statement" is intentionally excluded here: Scene6Statement already

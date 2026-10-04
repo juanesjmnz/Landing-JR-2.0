@@ -7,10 +7,11 @@ import { IconChip } from "../components/IconChip";
 import { RollingNumber } from "../components/RollingNumber";
 import { bounceIn, punch } from "../utils/anim";
 
+// Beat frames line up with the voiceover actually saying "50" and "5 a 25".
 const BEATS = [
   { at: 0, value: "1", color: colors.blue, cards: "single" as const, stamp: null as "x" | "check" | null },
-  { at: 54, value: "100", color: colors.blue, cards: "chaos" as const, stamp: "x" as const },
-  { at: 111, value: "5-40", color: colors.green, cards: "row" as const, stamp: "check" as const },
+  { at: 121, value: "50", color: colors.blue, cards: "chaos" as const, stamp: "x" as const },
+  { at: 170, value: "5-25", color: colors.green, cards: "row" as const, stamp: "check" as const },
 ];
 
 const CARD_COUNT = 26;
