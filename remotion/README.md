@@ -4,11 +4,12 @@ Réplica en Remotion del Reel de Instagram (`instagram.com/reel/DdwmZBqtSje`), c
 
 ## Audio / voces
 
-`public/narracion.mp3` es la narración final (179.7s), generada con el conector de ElevenLabs:
+`public/narracion.mp3` es la narración final (172.1s), generada con el conector de ElevenLabs:
 
-- **Peter** (fundador): voz "carlos" (`zSPJ694fdnzmEKl5n9wI`) — joven, fresca, un poco atolondrada.
-- **Coach**: voz "OscarLopez - Fresh Paisa" (`aFg00FoU2ua9oEoEPiEu`) — grave, con autoridad natural.
+- **Peter** (fundador): voz "Enzo - Viral Videos, Reels and Shorts" (`4L2A19qwD3pMcNlt484F`) — joven, enérgica, pensada para contenido viral/Reels/TikTok.
+- **Coach**: voz "Manu Arias - Español Viral" (`cfU714yVeokYQrpdyev5`) — joven, neutra ("Neutral Professional Spanish"), segura, también orientada a contenido viral.
 - Modelo: `eleven_multilingual_v2`.
+- (Primera iteración probada: "carlos" + "OscarLopez - Fresh Paisa" — se cambiaron por pedido del usuario a voces más jóvenes y de acento más neutro.)
 
 Se generó en 14 "turnos" (parlamentos continuos de un mismo personaje, no línea por línea) para que la prosodia sonara natural, con 0.3s de silencio entre turnos. `src/data/script.ts` ya tiene los tiempos (`start`/`end`) resincronizados a la duración real de cada clip — ver `remotion/src/data/script.ts`'s encabezado y el script de resync usado (`resync.py`, en el scratchpad de la sesión que lo generó) si necesitas regenerar la narración.
 
