@@ -3,6 +3,8 @@ import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remo
 import { colors } from "../theme";
 import { fontHand } from "../fonts";
 import { AnimatedBackground } from "../components/AnimatedBackground";
+import { FloatingParticles } from "../components/FloatingParticles";
+import { IconChip } from "../components/IconChip";
 import { bounceIn, wiggle } from "../utils/anim";
 
 export const Scene2UnderFive: React.FC = () => {
@@ -21,10 +23,13 @@ export const Scene2UnderFive: React.FC = () => {
   const ringOpacity = frame >= 55 ? interpolate(Math.sin((frame - 55) / 10), [-1, 1], [0.1, 0.4]) : 0;
 
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 300 }}>
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 230 }}>
       <AnimatedBackground variant="light" accent={colors.green} />
+      <FloatingParticles color={colors.red} count={10} opacity={0.2} />
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <IconChip icon="clock" label="BAJO EL MÍNIMO" color={colors.white} background={colors.red} delay={0} />
+
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 46 }}>
         <div style={{ display: "flex", alignItems: "flex-end" }}>
           <div style={{ width: 4, height: 120, backgroundColor: "#1A1A1A" }} />
           <div style={{ width: 4, height: 4, borderRadius: 4, backgroundColor: "#1A1A1A", marginLeft: -4, marginBottom: 116 }} />

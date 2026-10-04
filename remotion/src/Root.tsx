@@ -1,6 +1,7 @@
 import React from "react";
 import { Composition } from "remotion";
-import { AdSetReel, TOTAL_DURATION_IN_FRAMES } from "./Video";
+import { AdSetReel } from "./Video";
+import { TOTAL_DURATION_IN_FRAMES } from "./script";
 import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from "./theme";
 import { fontFaceCss } from "./fonts";
 

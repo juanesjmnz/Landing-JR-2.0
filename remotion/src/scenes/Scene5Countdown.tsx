@@ -3,6 +3,9 @@ import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remo
 import { colors } from "../theme";
 import { fontHeavy } from "../fonts";
 import { AnimatedBackground } from "../components/AnimatedBackground";
+import { FloatingParticles } from "../components/FloatingParticles";
+import { IconChip } from "../components/IconChip";
+import { RollingNumber } from "../components/RollingNumber";
 import { bounceIn, punch } from "../utils/anim";
 import { SCENE_DURATIONS } from "../script";
 
@@ -27,14 +30,18 @@ export const Scene5Countdown: React.FC = () => {
   const ringEntrance = Math.max(0, Math.min(1, bounceIn(frame, fps)));
 
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 210 }}>
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 150 }}>
       <AnimatedBackground variant="dark" accent={colors.blue} />
+      <FloatingParticles color={colors.gold} count={10} opacity={0.2} />
+
+      <IconChip icon="clock" label="CUENTA REGRESIVA" color={colors.bgDark} background={colors.highlight} delay={0} />
 
       <div
         style={{
           position: "relative",
           width: 140,
           height: 140,
+          marginTop: 36,
           marginBottom: 54,
           transform: `scale(${ringEntrance * ringScale})`,
         }}
@@ -65,7 +72,7 @@ export const Scene5Countdown: React.FC = () => {
             fontFamily: fontHeavy,
           }}
         >
-          <div style={{ fontSize: 38, fontWeight: 800 }}>{daysLeft}</div>
+          <RollingNumber value={String(daysLeft)} color={colors.white} fontSize={38} changedAtFrame={frame - sinceTick} />
           <div style={{ fontSize: 13, letterSpacing: 1, color: "#9AA0A6" }}>DÍAS</div>
         </div>
       </div>

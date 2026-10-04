@@ -3,6 +3,8 @@ import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remo
 import { colors } from "../theme";
 import { fontHeavy } from "../fonts";
 import { AnimatedBackground } from "../components/AnimatedBackground";
+import { FloatingParticles } from "../components/FloatingParticles";
+import { IconChip } from "../components/IconChip";
 import { bounceIn, breathe } from "../utils/anim";
 import { overFortyHeadline } from "../script";
 
@@ -33,8 +35,11 @@ export const Scene3OverForty: React.FC = () => {
   const dividerPulse = 1 + breathe(frame, 60, 0.08);
 
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 170 }}>
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 130 }}>
       <AnimatedBackground variant="light" accent={colors.blue} />
+      <FloatingParticles color={colors.blue} count={10} opacity={0.2} />
+
+      <IconChip icon="coin" label="PRESUPUESTO DILUIDO" color={colors.white} background={colors.blue} delay={0} />
 
       <div
         style={{
@@ -44,6 +49,7 @@ export const Scene3OverForty: React.FC = () => {
           color: "#1A1A1A",
           textAlign: "center",
           maxWidth: 560,
+          marginTop: 24,
           marginBottom: 34,
           opacity: Math.min(1, headlineEntrance),
           transform: `translateY(${interpolate(Math.min(1, headlineEntrance), [0, 1], [-14, 0])}px)`,

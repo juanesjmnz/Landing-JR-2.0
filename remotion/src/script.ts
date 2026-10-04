@@ -11,7 +11,7 @@ export interface CaptionLine {
 }
 
 export const SCENE_DURATIONS = {
-  cube: 189, // 0.0 - 6.3s
+  counter: 189, // 0.0 - 6.3s
   underFive: 213, // 6.3 - 13.4s
   overForty: 153, // 13.4 - 18.5s
   numberLine: 261, // 18.5 - 27.2s
@@ -19,7 +19,7 @@ export const SCENE_DURATIONS = {
   statement: 150, // 33.4 - 38.4s
 } as const;
 
-export const cubeLines: CaptionLine[] = [
+export const counterLines: CaptionLine[] = [
   { text: "¿Cuántos anuncios por conjunto de anuncios? Ni uno, ni 100 —", startFrame: 0, durationInFrames: 111 },
   { text: "el rango de trabajo es de 5 a 40.", startFrame: 111, durationInFrames: 78 },
 ];
@@ -56,7 +56,7 @@ export const statementLines = {
 
 // Full narration script, in order — same text used for the ES voiceover deliverable.
 export const FULL_SCRIPT_ES = [
-  ...cubeLines,
+  ...counterLines,
   ...underFiveLines,
   ...overFortyLines,
   ...numberLineLines,
@@ -82,7 +82,7 @@ export interface AbsoluteCaption {
 }
 
 const SCENE_ORDER: Array<{ key: keyof typeof SCENE_DURATIONS; lines: CaptionLine[]; theme: Theme }> = [
-  { key: "cube", lines: cubeLines, theme: "light" },
+  { key: "counter", lines: counterLines, theme: "light" },
   { key: "underFive", lines: underFiveLines, theme: "light" },
   { key: "overForty", lines: overFortyLines, theme: "light" },
   { key: "numberLine", lines: numberLineLines, theme: "light" },
@@ -93,31 +93,70 @@ const SCENE_ORDER: Array<{ key: keyof typeof SCENE_DURATIONS; lines: CaptionLine
   { key: "statement", lines: [], theme: "light" },
 ];
 
-export const TOTAL_DURATION_IN_FRAMES = Object.values(SCENE_DURATIONS).reduce((a, b) => a + b, 0);
+// Scenes are assembled with @remotion/transitions' <TransitionSeries>, which
+// makes adjacent scenes overlap by TRANSITION_FRAMES (the transition "eats"
+// into both sides rather than being inserted between them). So a scene's
+// absolute start in the final composition is NOT the naive cumulative sum of
+// prior durations — it's that sum minus one transition-worth of frames per
+// prior cut. This constant must match Video.tsx's TransitionSeries timing.
+export const TRANSITION_FRAMES = 14;
 
-export const SCENE_BOUNDARIES: number[] = (() => {
+interface SceneSpan {
+  start: number;
+  end: number; // start + this scene's own full nominal duration
+  theme: Theme;
+}
+
+const SCENE_SPANS: SceneSpan[] = (() => {
   let offset = 0;
-  const out: number[] = [];
-  for (const scene of SCENE_ORDER) {
-    offset += SCENE_DURATIONS[scene.key];
-    out.push(offset);
-  }
+  const out: SceneSpan[] = [];
+  SCENE_ORDER.forEach((scene, i) => {
+    const duration = SCENE_DURATIONS[scene.key];
+    out.push({ start: offset, end: offset + duration, theme: scene.theme });
+    const isLast = i === SCENE_ORDER.length - 1;
+    offset += duration - (isLast ? 0 : TRANSITION_FRAMES);
+  });
   return out;
 })();
 
+/** Real composition length once transition overlaps are accounted for. */
+export const TOTAL_DURATION_IN_FRAMES = SCENE_SPANS[SCENE_SPANS.length - 1].end;
+
+/** { start, end } per scene on the actual (overlap-adjusted) timeline — used
+ * by the timeline bar to size/fill each chapter segment. */
+export const SCENE_SEGMENTS: Array<{ start: number; end: number }> = SCENE_SPANS.map((s) => ({
+  start: s.start,
+  end: s.end,
+}));
+
+export const getThemeAtFrame = (frame: number): Theme => {
+  for (const span of SCENE_SPANS) {
+    if (frame < span.end) return span.theme;
+  }
+  return SCENE_SPANS[SCENE_SPANS.length - 1].theme;
+};
+
 export const ALL_CAPTIONS: AbsoluteCaption[] = (() => {
-  let offset = 0;
   const out: AbsoluteCaption[] = [];
-  for (const scene of SCENE_ORDER) {
+  SCENE_ORDER.forEach((scene, i) => {
+    const sceneStart = SCENE_SPANS[i].start;
+    const sceneDuration = SCENE_DURATIONS[scene.key];
+    const isLastScene = i === SCENE_ORDER.length - 1;
+    // Trim back a line that would otherwise run right up to the scene's
+    // nominal end: the next scene's content starts sliding in TRANSITION_FRAMES
+    // early (the transition overlaps both sides), so without this the
+    // outgoing caption visually collides with the incoming scene's own text.
+    const captionCutoff = isLastScene ? sceneDuration : sceneDuration - TRANSITION_FRAMES;
     for (const line of scene.lines) {
+      const clampedDuration = Math.min(line.durationInFrames, captionCutoff - line.startFrame);
+      if (clampedDuration <= 0) continue;
       out.push({
         text: line.text,
-        start: offset + line.startFrame,
-        duration: line.durationInFrames,
+        start: sceneStart + line.startFrame,
+        duration: clampedDuration,
         theme: scene.theme,
       });
     }
-    offset += SCENE_DURATIONS[scene.key];
-  }
+  });
   return out;
 })();

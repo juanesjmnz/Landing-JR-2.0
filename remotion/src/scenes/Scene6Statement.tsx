@@ -2,6 +2,7 @@ import React from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors } from "../theme";
 import { AnimatedBackground } from "../components/AnimatedBackground";
+import { FloatingParticles } from "../components/FloatingParticles";
 import { BounceWord } from "../components/BounceWord";
 import { bounceIn, breathe } from "../utils/anim";
 import { statementLines } from "../script";
@@ -32,6 +33,7 @@ export const Scene6Statement: React.FC = () => {
   return (
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
       <AnimatedBackground variant="light" accent={colors.maroon} />
+      <FloatingParticles color={colors.maroon} count={10} opacity={0.18} />
 
       {!showSecond && (
         <div
