@@ -1,32 +1,33 @@
 import React from "react";
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors } from "../theme";
 import { fontHeavy } from "../fonts";
-import { TwoToneCaption } from "../components/TwoToneCaption";
-import { numberLineLines } from "../script";
+import { AnimatedBackground } from "../components/AnimatedBackground";
+import { BounceWord } from "../components/BounceWord";
+import { bounceIn, breathe } from "../utils/anim";
+import { SCENE_DURATIONS } from "../script";
 
 const LINE_WIDTH = 620;
 
 export const Scene4NumberLine: React.FC = () => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
-  // Marker counts up 5 -> 40 across the whole scene, mirroring the source's
-  // ticking counter (11 -> 32 -> 35).
-  const markerValue = Math.round(interpolate(frame, [0, 261], [5, 40], { extrapolateRight: "clamp" }));
+  const markerValue = Math.round(
+    interpolate(frame, [0, SCENE_DURATIONS.numberLine], [5, 40], { extrapolateRight: "clamp" })
+  );
   const markerX = interpolate(markerValue, [1, 100], [0, LINE_WIDTH]);
   const rangeStart = interpolate(5, [1, 100], [0, LINE_WIDTH]);
   const rangeEnd = interpolate(40, [1, 100], [0, LINE_WIDTH]);
+  const rangeGlow = 0.5 + breathe(frame, 50, 0.25);
+
+  const lineEntrance = Math.max(0, Math.min(1, bounceIn(frame, fps)));
 
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: colors.bgLight,
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-      }}
-    >
-      <div style={{ width: LINE_WIDTH, marginBottom: 70 }}>
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 230 }}>
+      <AnimatedBackground variant="light" accent={colors.maroon} />
+
+      <div style={{ width: LINE_WIDTH, marginBottom: 76, opacity: lineEntrance, transform: `translateY(${(1 - lineEntrance) * -16}px)` }}>
         <div style={{ position: "relative", height: 40 }}>
           <div
             style={{
@@ -38,9 +39,10 @@ export const Scene4NumberLine: React.FC = () => {
               borderLeft: "8px solid transparent",
               borderRight: "8px solid transparent",
               borderTop: "12px solid #1A1A1A",
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
             }}
           />
-          <div style={{ position: "absolute", left: markerX - 14, top: -26, fontFamily: fontHeavy, fontSize: 20 }}>
+          <div style={{ position: "absolute", left: markerX - 16, top: -28, fontFamily: fontHeavy, fontWeight: 800, fontSize: 22 }}>
             {markerValue}
           </div>
         </div>
@@ -55,7 +57,8 @@ export const Scene4NumberLine: React.FC = () => {
               height: 14,
               borderRadius: 8,
               backgroundColor: colors.teal,
-              opacity: 0.7,
+              opacity: rangeGlow,
+              boxShadow: `0 0 ${12 + rangeGlow * 10}px ${colors.teal}`,
             }}
           />
         </div>
@@ -67,24 +70,10 @@ export const Scene4NumberLine: React.FC = () => {
         <div style={{ color: colors.green, fontFamily: fontHeavy, fontWeight: 700, fontSize: 18, marginTop: 4 }}>5 a 40</div>
       </div>
 
-      <div style={{ textAlign: "center", marginBottom: 60 }}>
-        <div style={{ fontFamily: fontHeavy, fontWeight: 800, fontSize: 60, color: colors.blue }}>PRESUPUESTO</div>
-        <div style={{ fontFamily: fontHeavy, fontWeight: 800, fontSize: 44, color: "#1A1A1A" }}>≠</div>
-        <div style={{ fontFamily: fontHeavy, fontWeight: 800, fontSize: 60, color: colors.maroon }}>VELOCIDAD</div>
-      </div>
-
-      <div style={{ height: 140, display: "flex", alignItems: "flex-start" }}>
-        {numberLineLines.map((line, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              opacity: frame >= line.startFrame && frame < line.startFrame + line.durationInFrames ? 1 : 0,
-            }}
-          >
-            <TwoToneCaption text={line.text} startFrame={line.startFrame} durationInFrames={line.durationInFrames} fontSize={40} />
-          </div>
-        ))}
+      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+        <BounceWord text="PRESUPUESTO" color={colors.blue} delay={2} fontSize={62} />
+        <BounceWord text="≠" color="#1A1A1A" delay={8} fontSize={44} />
+        <BounceWord text="VELOCIDAD" color={colors.maroon} delay={14} fontSize={62} />
       </div>
     </AbsoluteFill>
   );

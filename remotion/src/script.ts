@@ -64,3 +64,60 @@ export const FULL_SCRIPT_ES = [
 ]
   .map((l) => l.text)
   .concat(["Un conjunto de anuncios es una prueba controlada,", "no un lugar para soltar 5.000 anuncios."]);
+
+// --- Global centered caption track -----------------------------------------
+// The on-screen graphics differ per scene, but the spoken-word captions now
+// render as a single consistent overlay dead-center on screen (viral-reel
+// style), independent of whatever scene graphic is playing behind them.
+// This flattens every scene's lines onto the composition's absolute frame
+// timeline using SCENE_DURATIONS as cumulative offsets.
+
+export type Theme = "light" | "dark";
+
+export interface AbsoluteCaption {
+  text: string;
+  start: number; // absolute frame in the full composition
+  duration: number;
+  theme: Theme;
+}
+
+const SCENE_ORDER: Array<{ key: keyof typeof SCENE_DURATIONS; lines: CaptionLine[]; theme: Theme }> = [
+  { key: "cube", lines: cubeLines, theme: "light" },
+  { key: "underFive", lines: underFiveLines, theme: "light" },
+  { key: "overForty", lines: overFortyLines, theme: "light" },
+  { key: "numberLine", lines: numberLineLines, theme: "light" },
+  { key: "countdown", lines: countdownLines, theme: "dark" },
+  // "statement" is intentionally excluded here: Scene6Statement already
+  // renders its line as a big bold centered headline, so adding it to the
+  // global caption track would just duplicate the same text on screen.
+  { key: "statement", lines: [], theme: "light" },
+];
+
+export const TOTAL_DURATION_IN_FRAMES = Object.values(SCENE_DURATIONS).reduce((a, b) => a + b, 0);
+
+export const SCENE_BOUNDARIES: number[] = (() => {
+  let offset = 0;
+  const out: number[] = [];
+  for (const scene of SCENE_ORDER) {
+    offset += SCENE_DURATIONS[scene.key];
+    out.push(offset);
+  }
+  return out;
+})();
+
+export const ALL_CAPTIONS: AbsoluteCaption[] = (() => {
+  let offset = 0;
+  const out: AbsoluteCaption[] = [];
+  for (const scene of SCENE_ORDER) {
+    for (const line of scene.lines) {
+      out.push({
+        text: line.text,
+        start: offset + line.startFrame,
+        duration: line.durationInFrames,
+        theme: scene.theme,
+      });
+    }
+    offset += SCENE_DURATIONS[scene.key];
+  }
+  return out;
+})();

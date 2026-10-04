@@ -1,41 +1,52 @@
 import React from "react";
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors } from "../theme";
 import { fontHeavy } from "../fonts";
-import { TwoToneCaption } from "../components/TwoToneCaption";
-import { countdownLines, SCENE_DURATIONS } from "../script";
+import { AnimatedBackground } from "../components/AnimatedBackground";
+import { bounceIn, punch } from "../utils/anim";
+import { SCENE_DURATIONS } from "../script";
 
 const BAR_COLORS = [colors.gold, colors.gray, colors.orange, colors.darkGray, colors.darkGray];
-const BAR_MAX_WIDTH = [340, 300, 260, 220, 190];
+const BAR_MAX_WIDTH = [360, 320, 280, 230, 200];
 
 export const Scene5Countdown: React.FC = () => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const total = SCENE_DURATIONS.countdown;
 
-  const daysLeft = Math.max(0, 10 - Math.floor(interpolate(frame, [0, total], [0, 10], { extrapolateRight: "clamp" })));
-  const progress = interpolate(frame, [0, total], [0, 1], { extrapolateRight: "clamp" });
-  const circumference = 2 * Math.PI * 46;
+  const rawDays = interpolate(frame, [0, total], [0, 10], { extrapolateRight: "clamp" });
+  const daysLeft = Math.max(0, 10 - Math.floor(rawDays));
+  const sinceTick = frame - Math.floor(rawDays) * (total / 10);
+  const tickPunch = punch(sinceTick, fps);
+  const ringScale = 1 + Math.max(0, 1 - Math.min(1, tickPunch)) * 0.18;
 
-  const top3Opacity = interpolate(frame, [90, 105], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const progress = interpolate(frame, [0, total], [0, 1], { extrapolateRight: "clamp" });
+  const circumference = 2 * Math.PI * 48;
+
+  const top3Entrance = Math.max(0, bounceIn(frame, fps, 90));
+  const ringEntrance = Math.max(0, Math.min(1, bounceIn(frame, fps)));
 
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: colors.bgDark,
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-      }}
-    >
-      <div style={{ position: "relative", width: 130, height: 130, marginBottom: 50 }}>
-        <svg width={130} height={130} style={{ transform: "rotate(-90deg)" }}>
-          <circle cx={65} cy={65} r={46} stroke="#2A2E38" strokeWidth={6} fill="none" />
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 210 }}>
+      <AnimatedBackground variant="dark" accent={colors.blue} />
+
+      <div
+        style={{
+          position: "relative",
+          width: 140,
+          height: 140,
+          marginBottom: 54,
+          transform: `scale(${ringEntrance * ringScale})`,
+        }}
+      >
+        <svg width={140} height={140} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={70} cy={70} r={48} stroke="#2A2E38" strokeWidth={7} fill="none" />
           <circle
-            cx={65}
-            cy={65}
-            r={46}
-            stroke={colors.blue}
-            strokeWidth={6}
+            cx={70}
+            cy={70}
+            r={48}
+            stroke={colors.highlight}
+            strokeWidth={7}
             fill="none"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * progress}
@@ -54,50 +65,47 @@ export const Scene5Countdown: React.FC = () => {
             fontFamily: fontHeavy,
           }}
         >
-          <div style={{ fontSize: 34, fontWeight: 800 }}>{daysLeft}</div>
-          <div style={{ fontSize: 12, letterSpacing: 1, color: "#9AA0A6" }}>DÍAS</div>
+          <div style={{ fontSize: 38, fontWeight: 800 }}>{daysLeft}</div>
+          <div style={{ fontSize: 13, letterSpacing: 1, color: "#9AA0A6" }}>DÍAS</div>
         </div>
       </div>
 
-      <div style={{ opacity: top3Opacity, color: colors.gold, fontFamily: fontHeavy, fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <div
+        style={{
+          position: "relative",
+          opacity: Math.min(1, top3Entrance),
+          transform: `scale(${0.6 + Math.min(1.1, top3Entrance) * 0.4})`,
+          color: colors.gold,
+          fontFamily: fontHeavy,
+          fontWeight: 800,
+          fontSize: 18,
+          marginBottom: 10,
+          letterSpacing: 1,
+        }}
+      >
         TOP 3
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 10 }}>
         {BAR_COLORS.map((color, i) => {
           const growStart = i * 15;
-          const width = interpolate(frame, [growStart, growStart + 40], [0, BAR_MAX_WIDTH[i]], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          });
+          const growth = Math.max(0, Math.min(1, bounceIn(frame, fps, growStart)));
+          const width = growth * BAR_MAX_WIDTH[i];
           return (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 22, color: colors.white, fontFamily: fontHeavy, fontSize: 13 }}>#{i + 1}</div>
-              <div style={{ width: width, height: 22, backgroundColor: color, borderRadius: 3 }} />
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 24, color: colors.white, fontFamily: fontHeavy, fontWeight: 800, fontSize: 14 }}>#{i + 1}</div>
+              <div
+                style={{
+                  width,
+                  height: 24,
+                  backgroundColor: color,
+                  borderRadius: 4,
+                  boxShadow: i < 3 ? `0 0 14px ${color}99` : "none",
+                }}
+              />
             </div>
           );
         })}
-      </div>
-
-      <div style={{ height: 140, marginTop: 60, display: "flex", alignItems: "flex-start" }}>
-        {countdownLines.map((line, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              opacity: frame >= line.startFrame && frame < line.startFrame + line.durationInFrames ? 1 : 0,
-            }}
-          >
-            <TwoToneCaption
-              text={line.text}
-              startFrame={line.startFrame}
-              durationInFrames={line.durationInFrames}
-              fontSize={40}
-              darkColor={colors.white}
-              lightColor="#5A6270"
-            />
-          </div>
-        ))}
       </div>
     </AbsoluteFill>
   );

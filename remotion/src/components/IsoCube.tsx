@@ -1,12 +1,16 @@
 import React from "react";
 import { fontHeavy } from "../fonts";
 import { colors } from "../theme";
+import { lineLength } from "../utils/anim";
 
 interface IsoCubeProps {
   number: string;
   numberColor?: string;
   overlay?: "x" | "check" | null;
   overlayColor?: string;
+  /** 0 → not drawn, 1 → fully drawn. Animates the X / check like it's being sketched on. */
+  overlayProgress?: number;
+  numberScale?: number;
 }
 
 const SIZE = 260;
@@ -22,7 +26,15 @@ export const IsoCube: React.FC<IsoCubeProps> = ({
   numberColor = colors.blue,
   overlay = null,
   overlayColor = colors.pink,
+  overlayProgress = 1,
+  numberScale = 1,
 }) => {
+  const xLen1 = lineLength(40, 40, SIZE - 40, SIZE - 40);
+  const xLen2 = lineLength(SIZE - 40, 40, 40, SIZE - 40);
+  const checkLen =
+    lineLength(SIZE * 0.22, SIZE * 0.52, SIZE * 0.42, SIZE * 0.72) +
+    lineLength(SIZE * 0.42, SIZE * 0.72, SIZE * 0.8, SIZE * 0.28);
+
   return (
     <div
       style={{
@@ -39,10 +51,12 @@ export const IsoCube: React.FC<IsoCubeProps> = ({
           top: DEPTH,
           width: SIZE,
           height: SIZE,
-          border: "4px solid #1A1A1A",
+          border: "5px solid #1A1A1A",
+          borderRadius: 6,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          backgroundColor: "rgba(255,255,255,0.35)",
         }}
       >
         <span
@@ -51,6 +65,8 @@ export const IsoCube: React.FC<IsoCubeProps> = ({
             fontWeight: 800,
             fontSize: 90,
             color: numberColor,
+            display: "inline-block",
+            transform: `scale(${numberScale})`,
           }}
         >
           {number}
@@ -69,7 +85,9 @@ export const IsoCube: React.FC<IsoCubeProps> = ({
               stroke={overlayColor}
               strokeWidth={22}
               strokeLinecap="round"
-              opacity={0.75}
+              opacity={0.85}
+              strokeDasharray={xLen1}
+              strokeDashoffset={xLen1 * (1 - overlayProgress)}
             />
             <line
               x1={SIZE - 40}
@@ -79,7 +97,9 @@ export const IsoCube: React.FC<IsoCubeProps> = ({
               stroke={overlayColor}
               strokeWidth={22}
               strokeLinecap="round"
-              opacity={0.75}
+              opacity={0.85}
+              strokeDasharray={xLen2}
+              strokeDashoffset={xLen2 * (1 - Math.max(0, overlayProgress * 2 - 1))}
             />
           </svg>
         )}
@@ -96,7 +116,9 @@ export const IsoCube: React.FC<IsoCubeProps> = ({
               strokeWidth={22}
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity={0.75}
+              opacity={0.85}
+              strokeDasharray={checkLen}
+              strokeDashoffset={checkLen * (1 - overlayProgress)}
             />
           </svg>
         )}

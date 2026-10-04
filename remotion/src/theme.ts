@@ -14,6 +14,11 @@ export const colors = {
   darkGray: "#33383F",
   white: "#FFFFFF",
   pink: "#C98F9B",
+  red: "#E24C4C",
+  // Viral-caption accent: a vivid pill color that pops on both the light
+  // and dark scene backgrounds, used to highlight the currently-spoken word.
+  highlight: "#D4FF3F",
+  highlightText: "#15170A",
 };
 
 export const VIDEO_WIDTH = 1080;
