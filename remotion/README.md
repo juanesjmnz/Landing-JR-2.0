@@ -1,6 +1,16 @@
 # Remotion — "La Estrategia del Enjambre" (réplica del Reel en español)
 
-Réplica en Remotion del Reel de Instagram (`instagram.com/reel/DdwmZBqtSje`), con textos en español, lista para sincronizar con narración real.
+Réplica en Remotion del Reel de Instagram (`instagram.com/reel/DdwmZBqtSje`), con textos en español y narración real generada con ElevenLabs.
+
+## Audio / voces
+
+`public/narracion.mp3` es la narración final (179.7s), generada con el conector de ElevenLabs:
+
+- **Peter** (fundador): voz "carlos" (`zSPJ694fdnzmEKl5n9wI`) — joven, fresca, un poco atolondrada.
+- **Coach**: voz "OscarLopez - Fresh Paisa" (`aFg00FoU2ua9oEoEPiEu`) — grave, con autoridad natural.
+- Modelo: `eleven_multilingual_v2`.
+
+Se generó en 14 "turnos" (parlamentos continuos de un mismo personaje, no línea por línea) para que la prosodia sonara natural, con 0.3s de silencio entre turnos. `src/data/script.ts` ya tiene los tiempos (`start`/`end`) resincronizados a la duración real de cada clip — ver `remotion/src/data/script.ts`'s encabezado y el script de resync usado (`resync.py`, en el scratchpad de la sesión que lo generó) si necesitas regenerar la narración.
 
 ## Qué es esto
 
@@ -36,7 +46,7 @@ bun run render   # renderiza out/video.mp4
 
 > Nota: en este contenedor se usó un Chromium headless preinstalado (`/opt/pw-browsers/...`), configurado en `remotion.config.ts`. En tu máquina local probablemente no necesites esa línea — Remotion descarga su propio Chrome automáticamente.
 
-## Cómo sincronizar con tu audio real
+## Cómo resincronizar si regrabas el audio
 
 Todo el timing vive en **`src/data/script.ts`**. Cada "shot" tiene:
 
@@ -54,13 +64,12 @@ Todo el timing vive en **`src/data/script.ts`**. Cada "shot" tiene:
 }
 ```
 
-Pasos para resincronizar cuando tengas la narración real:
+`Video.tsx` ya incluye `<Audio src={staticFile("narracion.mp3")} />`. Pasos para resincronizar si reemplazas el audio:
 
-1. Sube tu archivo de audio a `public/narracion.mp3` (crea la carpeta `public/` si no existe).
-2. Agrega `<Audio src={staticFile("narracion.mp3")} />` dentro de `SwarmVideo` en `Video.tsx` (import `Audio` y `staticFile` de `remotion`).
-3. Escucha el audio y anota en qué segundo empieza/termina cada línea (Descript, Adobe Audition o incluso Remotion Studio con el audio ya cargado te muestran la forma de onda).
-4. Actualiza los `start`/`end` de cada shot y de cada línea dentro de `lines` en `script.ts` con esos tiempos reales. La duración total del video se ajusta sola (`TOTAL_SECONDS` se calcula del último shot).
-5. Vuelve a correr `bun run render`.
+1. Reemplaza `public/narracion.mp3` por tu nuevo archivo (mismo nombre, o actualiza la ruta en `Video.tsx`).
+2. Escucha el audio y anota en qué segundo empieza/termina cada línea (Descript, Adobe Audition o incluso Remotion Studio con el audio ya cargado te muestran la forma de onda).
+3. Actualiza los `start`/`end` de cada shot y de cada línea dentro de `lines` en `script.ts` con esos tiempos reales. La duración total del video se ajusta sola (`TOTAL_SECONDS` se calcula del último shot).
+4. Vuelve a correr `bun run render`.
 
 No hace falta tocar nada de `Shots.tsx` ni `Video.tsx` para resincronizar — solo los números en `script.ts`.
 

@@ -1,8 +1,10 @@
 import React from "react";
 import {
   AbsoluteFill,
+  Audio,
   Sequence,
   interpolate,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
@@ -136,6 +138,7 @@ export const SwarmVideo: React.FC = () => {
   const { fps } = useVideoConfig();
   return (
     <AbsoluteFill style={{ fontFamily: "Inter" }}>
+      <Audio src={staticFile("narracion.mp3")} />
       {shots.map((shot, index) => {
         const from = Math.round(shot.start * fps);
         const durationInFrames = Math.round((shot.end - shot.start) * fps);
