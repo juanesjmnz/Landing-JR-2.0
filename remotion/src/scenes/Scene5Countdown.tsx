@@ -10,7 +10,7 @@ import { bounceIn, punch } from "../utils/anim";
 import { SCENE_DURATIONS } from "../script";
 
 const BAR_COLORS = [colors.gold, colors.gray, colors.orange, colors.darkGray, colors.darkGray];
-const BAR_MAX_WIDTH = [360, 320, 280, 230, 200];
+const BAR_MAX_WIDTH = [430, 385, 335, 275, 240];
 
 export const Scene5Countdown: React.FC = () => {
   const frame = useCurrentFrame();
@@ -24,13 +24,13 @@ export const Scene5Countdown: React.FC = () => {
   const ringScale = 1 + Math.max(0, 1 - Math.min(1, tickPunch)) * 0.18;
 
   const progress = interpolate(frame, [0, total], [0, 1], { extrapolateRight: "clamp" });
-  const circumference = 2 * Math.PI * 48;
+  const circumference = 2 * Math.PI * 58;
 
   const top3Entrance = Math.max(0, bounceIn(frame, fps, 90));
   const ringEntrance = Math.max(0, Math.min(1, bounceIn(frame, fps)));
 
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 150 }}>
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 110 }}>
       <AnimatedBackground variant="dark" accent={colors.blue} />
       <FloatingParticles color={colors.gold} count={10} opacity={0.2} />
 
@@ -39,21 +39,21 @@ export const Scene5Countdown: React.FC = () => {
       <div
         style={{
           position: "relative",
-          width: 140,
-          height: 140,
-          marginTop: 36,
-          marginBottom: 54,
+          width: 170,
+          height: 170,
+          marginTop: 40,
+          marginBottom: 60,
           transform: `scale(${ringEntrance * ringScale})`,
         }}
       >
-        <svg width={140} height={140} style={{ transform: "rotate(-90deg)" }}>
-          <circle cx={70} cy={70} r={48} stroke="#2A2E38" strokeWidth={7} fill="none" />
+        <svg width={170} height={170} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={85} cy={85} r={58} stroke="#2A2E38" strokeWidth={8} fill="none" />
           <circle
-            cx={70}
-            cy={70}
-            r={48}
+            cx={85}
+            cy={85}
+            r={58}
             stroke={colors.highlight}
-            strokeWidth={7}
+            strokeWidth={8}
             fill="none"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * progress}
@@ -72,8 +72,8 @@ export const Scene5Countdown: React.FC = () => {
             fontFamily: fontHeavy,
           }}
         >
-          <RollingNumber value={String(daysLeft)} color={colors.white} fontSize={38} changedAtFrame={frame - sinceTick} />
-          <div style={{ fontSize: 13, letterSpacing: 1, color: "#9AA0A6" }}>DÍAS</div>
+          <RollingNumber value={String(daysLeft)} color={colors.white} fontSize={46} changedAtFrame={frame - sinceTick} />
+          <div style={{ fontSize: 15, letterSpacing: 1, color: "#9AA0A6" }}>DÍAS</div>
         </div>
       </div>
 
@@ -85,28 +85,28 @@ export const Scene5Countdown: React.FC = () => {
           color: colors.gold,
           fontFamily: fontHeavy,
           fontWeight: 800,
-          fontSize: 18,
-          marginBottom: 10,
+          fontSize: 21,
+          marginBottom: 12,
           letterSpacing: 1,
         }}
       >
         TOP 3
       </div>
 
-      <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 12 }}>
         {BAR_COLORS.map((color, i) => {
           const growStart = i * 15;
           const growth = Math.max(0, Math.min(1, bounceIn(frame, fps, growStart)));
           const width = growth * BAR_MAX_WIDTH[i];
           return (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 24, color: colors.white, fontFamily: fontHeavy, fontWeight: 800, fontSize: 14 }}>#{i + 1}</div>
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ width: 28, color: colors.white, fontFamily: fontHeavy, fontWeight: 800, fontSize: 17 }}>#{i + 1}</div>
               <div
                 style={{
                   width,
-                  height: 24,
+                  height: 29,
                   backgroundColor: color,
-                  borderRadius: 4,
+                  borderRadius: 5,
                   boxShadow: i < 3 ? `0 0 14px ${color}99` : "none",
                 }}
               />

@@ -11,14 +11,14 @@ const ICONS_TRIGGER = 90;
 // Lines up with the voiceover reaching "mucha inversión ... y generar sesgo."
 const BIAS_TRIGGER = 266;
 // One ad hogging the budget: heights are deliberately lopsided.
-const BIAS_BAR_HEIGHTS = [14, 20, 78, 16];
+const BIAS_BAR_HEIGHTS = [18, 26, 98, 20];
 
 export const Scene2UnderFive: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   const barGrow = bounceIn(frame, fps);
-  const barWidth = interpolate(barGrow, [0, 1], [0, 300], { extrapolateRight: "clamp" });
+  const barWidth = interpolate(barGrow, [0, 1], [0, 360], { extrapolateRight: "clamp" });
 
   const iconsEntrance = bounceIn(frame, fps, ICONS_TRIGGER);
   const iconsScale = Math.max(0, iconsEntrance);
@@ -33,37 +33,37 @@ export const Scene2UnderFive: React.FC = () => {
     frame >= ICONS_TRIGGER ? interpolate(Math.sin((frame - ICONS_TRIGGER) / 10), [-1, 1], [0.1, 0.4]) : 0;
 
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 230 }}>
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 170 }}>
       <AnimatedBackground variant="light" accent={colors.green} />
       <FloatingParticles color={colors.red} count={10} opacity={0.2} />
 
       <IconChip icon="clock" label="BAJO EL MÍNIMO" color={colors.white} background={colors.red} delay={0} />
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 46 }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 50 }}>
         <div style={{ display: "flex", alignItems: "flex-end" }}>
-          <div style={{ width: 4, height: 120, backgroundColor: "#1A1A1A" }} />
-          <div style={{ width: 4, height: 4, borderRadius: 4, backgroundColor: "#1A1A1A", marginLeft: -4, marginBottom: 116 }} />
+          <div style={{ width: 5, height: 144, backgroundColor: "#1A1A1A" }} />
+          <div style={{ width: 5, height: 5, borderRadius: 5, backgroundColor: "#1A1A1A", marginLeft: -5, marginBottom: 139 }} />
           <div
             style={{
               width: barWidth,
-              height: 60,
+              height: 74,
               backgroundColor: colors.green,
               boxShadow: "0 8px 22px rgba(30,122,30,0.35)",
-              borderRadius: "0 6px 6px 0",
+              borderRadius: "0 7px 7px 0",
             }}
           />
         </div>
-        <div style={{ fontFamily: fontHand, fontSize: 48, color: "#1A1A1A", marginTop: 14 }}>5 a 25</div>
+        <div style={{ fontFamily: fontHand, fontSize: 58, color: "#1A1A1A", marginTop: 16 }}>5 a 25</div>
 
-        <div style={{ position: "relative", marginTop: 56, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ position: "relative", marginTop: 64, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div
             style={{
               position: "absolute",
-              width: 120,
-              height: 120,
-              top: -45,
+              width: 144,
+              height: 144,
+              top: -54,
               borderRadius: "50%",
-              border: `3px solid ${colors.red}`,
+              border: `4px solid ${colors.red}`,
               opacity: ringOpacity,
               transform: `scale(${ringPulse})`,
             }}
@@ -75,22 +75,22 @@ export const Scene2UnderFive: React.FC = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 10,
+              gap: 12,
             }}
           >
-            <div style={{ display: "flex", gap: 12 }}>
-              <div style={{ width: 30, height: 30, backgroundColor: colors.red, borderRadius: 4 }} />
-              <div style={{ width: 30, height: 30, backgroundColor: colors.red, borderRadius: 4 }} />
+            <div style={{ display: "flex", gap: 14 }}>
+              <div style={{ width: 36, height: 36, backgroundColor: colors.red, borderRadius: 5 }} />
+              <div style={{ width: 36, height: 36, backgroundColor: colors.red, borderRadius: 5 }} />
             </div>
-            <svg width={150} height={32}>
-              <path d="M0,16 Q18,0 37,16 T74,16 T111,16 T150,16" stroke={colors.red} strokeWidth={5} fill="none" strokeLinecap="round" />
+            <svg width={180} height={38}>
+              <path d="M0,19 Q22,0 44,19 T88,19 T132,19 T180,19" stroke={colors.red} strokeWidth={6} fill="none" strokeLinecap="round" />
             </svg>
           </div>
         </div>
 
         {/* One ad eating the whole budget: reinforces "un solo anuncio puede
             llevar mucha inversión y generar sesgo" right as it's said. */}
-        <div style={{ position: "relative", display: "flex", alignItems: "flex-end", gap: 8, height: 90, marginTop: 34 }}>
+        <div style={{ position: "relative", display: "flex", alignItems: "flex-end", gap: 10, height: 110, marginTop: 38 }}>
           {BIAS_BAR_HEIGHTS.map((h, i) => {
             const isHog = i === 2;
             const growth = Math.max(0, Math.min(1, bounceIn(frame, fps, BIAS_TRIGGER + i * 4)));
@@ -98,10 +98,10 @@ export const Scene2UnderFive: React.FC = () => {
               <div
                 key={i}
                 style={{
-                  width: 20,
+                  width: 25,
                   height: h * growth,
                   backgroundColor: isHog ? colors.red : colors.gray,
-                  borderRadius: 3,
+                  borderRadius: 4,
                   boxShadow: isHog ? `0 0 14px ${colors.red}99` : "none",
                 }}
               />

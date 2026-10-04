@@ -9,7 +9,7 @@ import { BounceWord } from "../components/BounceWord";
 import { bounceIn, breathe, punch } from "../utils/anim";
 import { SCENE_DURATIONS } from "../script";
 
-const LINE_WIDTH = 620;
+const LINE_WIDTH = 720;
 const MARKER_MIN = 5;
 const MARKER_MAX = 25;
 const AXIS_MAX = 30; // scale upper bound — keeps the 5-25 range visually spread out
@@ -40,29 +40,29 @@ export const Scene4NumberLine: React.FC = () => {
 
       <IconChip icon="spark" label="DOS FACTORES CLAVE" color={colors.white} background={colors.maroon} delay={0} />
 
-      <div style={{ width: LINE_WIDTH, marginTop: 40, marginBottom: 76, opacity: lineEntrance, transform: `translateY(${(1 - lineEntrance) * -16}px)` }}>
-        <div style={{ position: "relative", height: 40 }}>
+      <div style={{ width: LINE_WIDTH, marginTop: 50, marginBottom: 86, opacity: lineEntrance, transform: `translateY(${(1 - lineEntrance) * -16}px)` }}>
+        <div style={{ position: "relative", height: 46 }}>
           <div
             style={{
               position: "absolute",
-              left: markerX - 8,
+              left: markerX - 9,
               top: 0,
               width: 0,
               height: 0,
-              borderLeft: "8px solid transparent",
-              borderRight: "8px solid transparent",
-              borderTop: "12px solid #1A1A1A",
+              borderLeft: "9px solid transparent",
+              borderRight: "9px solid transparent",
+              borderTop: "14px solid #1A1A1A",
               filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
             }}
           />
           <div
             style={{
               position: "absolute",
-              left: markerX - 16,
-              top: -28,
+              left: markerX - 19,
+              top: -32,
               fontFamily: fontHeavy,
               fontWeight: 800,
-              fontSize: 22,
+              fontSize: 26,
               transform: `scale(${tickScale})`,
               transformOrigin: "left bottom",
             }}
@@ -70,34 +70,34 @@ export const Scene4NumberLine: React.FC = () => {
             {markerValue}
           </div>
         </div>
-        <div style={{ position: "relative", height: 14 }}>
-          <div style={{ position: "absolute", left: 0, right: 0, top: 6, height: 2, backgroundColor: "#1A1A1A" }} />
+        <div style={{ position: "relative", height: 17 }}>
+          <div style={{ position: "absolute", left: 0, right: 0, top: 7, height: 3, backgroundColor: "#1A1A1A" }} />
           <div
             style={{
               position: "absolute",
               left: rangeStart,
               width: rangeEnd - rangeStart,
               top: 0,
-              height: 14,
-              borderRadius: 8,
+              height: 17,
+              borderRadius: 9,
               backgroundColor: colors.teal,
               opacity: rangeGlow,
               boxShadow: `0 0 ${12 + rangeGlow * 10}px ${colors.teal}`,
             }}
           />
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, color: colors.gray, fontFamily: fontHeavy, fontSize: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, color: colors.gray, fontFamily: fontHeavy, fontSize: 19 }}>
           <span>1</span>
           <span>15</span>
           <span>30+</span>
         </div>
-        <div style={{ color: colors.green, fontFamily: fontHeavy, fontWeight: 700, fontSize: 18, marginTop: 4 }}>5 a 25</div>
+        <div style={{ color: colors.green, fontFamily: fontHeavy, fontWeight: 700, fontSize: 21, marginTop: 5 }}>5 a 25</div>
       </div>
 
-      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-        <BounceWord text="PRESUPUESTO" color={colors.blue} delay={2} fontSize={62} />
-        <BounceWord text="≠" color="#1A1A1A" delay={8} fontSize={44} />
-        <BounceWord text="VELOCIDAD" color={colors.maroon} delay={14} fontSize={62} />
+      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+        <BounceWord text="PRESUPUESTO" color={colors.blue} delay={2} fontSize={72} />
+        <BounceWord text="≠" color="#1A1A1A" delay={8} fontSize={50} />
+        <BounceWord text="VELOCIDAD" color={colors.maroon} delay={14} fontSize={72} />
       </div>
     </AbsoluteFill>
   );

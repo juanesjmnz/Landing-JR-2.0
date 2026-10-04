@@ -53,7 +53,7 @@ export const Scene6Statement: React.FC = () => {
           }}
         >
           {FIRST_WORDS.map((w, i) => (
-            <BounceWord key={w + i} text={w} color="#1A1A1A" delay={i * 3} fontSize={48} />
+            <BounceWord key={w + i} text={w} color="#1A1A1A" delay={i * 3} fontSize={56} />
           ))}
         </div>
       )}
@@ -65,8 +65,8 @@ export const Scene6Statement: React.FC = () => {
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "center",
-            gap: "0 12px",
-            maxWidth: 820,
+            gap: "0 14px",
+            maxWidth: 900,
             textAlign: "center",
           }}
         >
@@ -74,7 +74,7 @@ export const Scene6Statement: React.FC = () => {
             const isEmphasis = w.color === colors.green;
             return (
               <span key={w.text + i} style={{ transform: isEmphasis ? `scale(${emphasisPulse})` : undefined, display: "inline-block" }}>
-                <BounceWord text={w.text} color={w.color} delay={cut + i * 3} fontSize={42} />
+                <BounceWord text={w.text} color={w.color} delay={cut + i * 3} fontSize={48} />
               </span>
             );
           })}

@@ -37,13 +37,17 @@ export const CaptionLayer: React.FC = () => {
     <AbsoluteFill
       style={{
         alignItems: "center",
-        justifyContent: "center",
         pointerEvents: "none",
       }}
     >
+      {/* Sits below center (~68% down) so scene graphics get the upper two
+          thirds of the frame instead of competing with text at dead-center. */}
       <div
         style={{
-          transform: `scale(${lineScale})`,
+          position: "absolute",
+          top: "68%",
+          left: "50%",
+          transform: `translate(-50%, -50%) scale(${lineScale})`,
           opacity: lineOpacity,
           maxWidth: 920,
           display: "flex",

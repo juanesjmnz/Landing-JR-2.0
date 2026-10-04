@@ -45,24 +45,26 @@ interface IconChipProps {
   color: string;
   background: string;
   delay?: number;
+  fontSize?: number;
 }
 
 /** Small pill badge (icon + short label) used to tag a scene's topic —
  * adds a layer of graphic richness beyond big numbers and bars. */
-export const IconChip: React.FC<IconChipProps> = ({ icon, label, color, background, delay = 0 }) => {
+export const IconChip: React.FC<IconChipProps> = ({ icon, label, color, background, delay = 0, fontSize = 17 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const p = bounceIn(frame, fps, delay);
   const scale = Math.max(0, Math.min(1.08, p));
   const opacity = interpolate(frame - delay, [0, 6], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const iconSize = fontSize + 3;
 
   return (
     <div
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 8,
-        padding: "8px 16px",
+        gap: 9,
+        padding: `${Math.round(fontSize * 0.5)}px ${Math.round(fontSize * 1.05)}px`,
         borderRadius: 999,
         backgroundColor: background,
         color,
@@ -70,10 +72,10 @@ export const IconChip: React.FC<IconChipProps> = ({ icon, label, color, backgrou
         opacity,
       }}
     >
-      <svg width={18} height={18} viewBox="0 0 22 22">
+      <svg width={iconSize} height={iconSize} viewBox="0 0 22 22">
         {ICONS[icon]}
       </svg>
-      <span style={{ fontFamily: fontHeavy, fontWeight: 700, fontSize: 15, letterSpacing: 0.5 }}>{label}</span>
+      <span style={{ fontFamily: fontHeavy, fontWeight: 700, fontSize, letterSpacing: 0.5 }}>{label}</span>
     </div>
   );
 };
